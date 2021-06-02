@@ -3,7 +3,6 @@ package com.example.blackfootprojectdemo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-
 import com.aldebaran.qi.sdk.QiContext;
 import com.aldebaran.qi.sdk.QiSDK;
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks;
@@ -15,10 +14,12 @@ import com.aldebaran.qi.sdk.object.conversation.Phrase;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 
 public class MainActivity extends RobotActivity implements RobotLifecycleCallbacks {
+    private QiContext pepper_context = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Hide speech bar from primary view (only shown when Pepper's talked to).
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.IMMERSIVE);
         setSpeechBarDisplayPosition(SpeechBarDisplayPosition.TOP);
         setContentView(R.layout.activity_main);
@@ -37,12 +38,16 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     public void onRobotFocusGained(QiContext qiContext) {
         // The robot focus is gained.
         // Create a new say action.
-        Say say = SayBuilder.with(qiContext) // Create the builder with the context.
-                .withText("Hello human!") // Set the text to say.
-                .build(); // Build the say action.
-
-        // Execute the action.
-        say.run();
+        this.pepper_context = qiContext;
+        sayText("Oki! I'm Pepper! Let's learn some Blackfoot. How would you like to begin?\n" +
+                        "We can learn some words, play a game, or have a fun test to see how well you do!");
+//        Say say = SayBuilder.with(qiContext) // Create the builder with the context.
+//                .withText("Oki! I'm Pepper! Let's learn some Blackfoot. How would you like to begin?" +
+//                        "We can learn some words, play a game, or have a fun test to see how well you do!") // Set the text to say.
+//                .build(); // Build the say action.
+//
+//        // Execute the action.
+//        say.run();
     }
 
     @Override
@@ -55,14 +60,19 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
         // The robot focus is refused.
     }
 
+    private void sayText(String textToSpeech) {
+        Say say = SayBuilder.with(pepper_context) // Create the builder with the context.
+                .withText(textToSpeech) // Set the text to say.
+                .build(); // Build the say action.
+        say.run();
+    }
+
+    // When the play button on the main menu is clicked
     public void playButtonClick (View playButtonView) {
         String user_name = "Garry";
+        // Find "resource by ID" called WelcomeTextBox and modify it
         TextView welcomeText = findViewById(R.id.welcomeTextBox);
         welcomeText.setText("Hello, " + user_name + "!");
-//        Phrase letsPlayIntro = new Phrase("Hi " + user_name + "! Let's play a game and learn Blackfoot!");
-//        Say sayName = SayBuilder.with(qiContext)
-//                .withPhrase(letsPlayIntro)
-//                .build();
-//        sayName.run();
+        sayText("Hi " + user_name + "! Let's play a game and learn Blackfoot!");
     }
 }
