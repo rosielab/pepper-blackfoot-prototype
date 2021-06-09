@@ -5,19 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    tools:context=".MainActivity"
+    tools:context=".PepperBlackfootProject"
     tools:visibility="visible">
 
+    <!--        android:onClick="playButtonClick"-->
     <Button
         android:id="@+id/playButton"
         android:layout_width="200dp"
         android:layout_height="76dp"
-        android:layout_marginTop="228dp"
+        android:layout_marginTop="224dp"
         android:layout_marginEnd="222dp"
         android:background="#2196F3"
         android:backgroundTint="#43B5F4"
         android:fontFamily="@font/nunito_bold"
-        android:onClick="playButtonClick"
         android:text="Play"
         android:textAlignment="center"
         android:textColor="#000000"
@@ -25,13 +25,14 @@
         android:textStyle="bold"
         android:theme="@style/Theme.MaterialComponents"
         android:typeface="normal"
-        android:visibility="visible"
+        android:visibility="gone"
         app:cornerRadius="15dp"
         app:layout_constraintEnd_toEndOf="@id/mainmenu"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="@id/mainmenu"
         app:layout_constraintTop_toTopOf="@id/mainmenu"
         tools:text="Play"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
     <Button
         android:id="@+id/learnButton"
@@ -41,20 +42,19 @@
         android:background="#2196F3"
         android:backgroundTint="#43B5F4"
         android:fontFamily="@font/nunito_bold"
-        android:onClick="playButtonClick"
         android:text="Learn"
         android:textAlignment="center"
         android:textColor="#000000"
         android:textSize="36sp"
         android:textStyle="bold"
         android:typeface="normal"
-        android:visibility="visible"
+        android:visibility="gone"
         app:cornerRadius="15dp"
         app:layout_constraintEnd_toEndOf="@+id/playButton"
         app:layout_constraintStart_toStartOf="@+id/playButton"
         app:layout_constraintTop_toBottomOf="@+id/playButton"
         tools:text="Learn"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
     <Button
         android:id="@+id/testButton"
@@ -64,20 +64,19 @@
         android:background="#2196F3"
         android:backgroundTint="#43B5F4"
         android:fontFamily="@font/nunito_bold"
-        android:onClick="playButtonClick"
         android:text="Test"
         android:textAlignment="center"
         android:textColor="#000000"
         android:textSize="36sp"
         android:textStyle="bold"
         android:typeface="normal"
-        android:visibility="visible"
+        android:visibility="gone"
         app:cornerRadius="15dp"
         app:layout_constraintEnd_toEndOf="@+id/learnButton"
         app:layout_constraintStart_toStartOf="@+id/learnButton"
         app:layout_constraintTop_toBottomOf="@+id/learnButton"
         tools:text="Test"
-        tools:visibility="visible" />
+        tools:visibility="gone" />
 
     <ImageView
         android:id="@+id/mainmenu"
@@ -86,25 +85,11 @@
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
         app:srcCompat="@drawable/menu"
         tools:visibility="visible" />
 
-    <TextView
-        android:id="@+id/welcomeTextBox"
-        android:layout_width="164dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="8dp"
-        android:text="Welcome!"
-        android:textAlignment="viewStart"
-        android:textAllCaps="false"
-        android:textColor="#000000"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/mainmenu"
-        app:layout_constraintEnd_toStartOf="@+id/testButton"
-        app:layout_constraintStart_toStartOf="@id/mainmenu"
-        tools:text="Welcome!"
-        tools:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>
