@@ -20,10 +20,10 @@ import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-
+// Heyyyyy
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
-    private static String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
     private static boolean continue_looping = true;
     private QiContext pepper_context = null;
 
@@ -212,8 +212,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
+        super.onResume();
         QiSDK.register(this, this);
         super.onResume();
         Log.d("onResume", "QiSDK.register");
@@ -234,9 +234,9 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     }
 
     @Override
-    protected void onDestroy()
-    {
+    protected void onDestroy() {
         // Unregister the RobotLifecycleCallbacks for this Activity.
+        super.onDestroy();
         this.pepper_context = null;
         QiSDK.unregister(this, this);
         super.onDestroy();
