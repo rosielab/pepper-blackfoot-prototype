@@ -18,6 +18,9 @@ import com.aldebaran.qi.sdk.object.conversation.PhraseSet;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
     private static String TAG = "MainActivity";
@@ -32,7 +35,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Hide speech bar from primary view (only shown when Pepper's talked to).
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.IMMERSIVE);
         setSpeechBarDisplayPosition(SpeechBarDisplayPosition.TOP);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_menu);
 
         // Register the RobotLifecycleCallbacks to this Activity.
         QiSDK.register(this, this);
@@ -45,9 +48,9 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // The robot focus is gained.
         this.pepper_context = qiContext;
         introduction();
-        while (continue_looping == true)
+        while (continue_looping)
         {
-            updateTabletImage("activity_main");
+            updateTabletImage("main_menu");
             menuSystem();
         }
         // Translation: See you later, have a good day.
@@ -72,7 +75,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         sayText("Would you like to play a game, learn some words, do a little test, or exit?");
 
         PhraseSet play_text = PhraseText("play", "game", "first");
-        PhraseSet learn_text = PhraseText("learn", "flashcards", "teach", "second", "middle");
+        PhraseSet learn_text = PhraseText("learn", "layout/flashcards", "teach", "second", "middle");
         PhraseSet test_text = PhraseText("test", "exam", "third", "last", "final");
         PhraseSet any_text = PhraseText("anything", "you", "something", "matter", "any");
 //        PhraseSet exit_tablet = PhraseText("exit", "stop", "done", "break");
@@ -102,10 +105,33 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 //        }
     }
 
-    // Learn menu function
+    // When user chooses to learn
     private void learnMenu()
     {
-        updateTabletImage("main_menu");
+        // Hashmap (dictionary) for the flashcard words
+        Map<String, String> flashcardWords = new HashMap<String, String>()
+        {{
+            // Make sure the English word matches the XML filename (for tablet preview)
+            put("egg", "owa");
+        }};
+
+        for (String word : flashcardWords.keySet())
+        {
+            // Translation of English word
+            String blackfootWord = flashcardWords.get(word);
+
+            updateTabletImage(word);
+            sayText(word + " in Blackfoot is " + blackfootWord + ". Repeat after me. " + blackfootWord + ".");
+
+            // Ask end user to repeat the translation
+            PhraseSet word_text = PhraseText(blackfootWord);
+            PhraseSet matchedFlashcardOption = ListenText(word_text);
+
+            if (PhraseSetUtil.equals(matchedFlashcardOption,word_text))
+            {
+                sayText("Yes! " + word + " is " + blackfootWord + ". Let's try another word.");
+            }
+        }
     }
 
     /*
