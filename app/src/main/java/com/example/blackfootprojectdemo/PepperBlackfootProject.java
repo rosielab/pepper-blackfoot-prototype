@@ -2,16 +2,23 @@ package com.example.blackfootprojectdemo;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+
+import androidx.annotation.RawRes;
 
 import com.aldebaran.qi.sdk.QiContext;
 import com.aldebaran.qi.sdk.QiSDK;
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks;
+import com.aldebaran.qi.sdk.builder.AnimateBuilder;
+import com.aldebaran.qi.sdk.builder.AnimationBuilder;
 import com.aldebaran.qi.sdk.builder.ListenBuilder;
 import com.aldebaran.qi.sdk.builder.PhraseSetBuilder;
 import com.aldebaran.qi.sdk.builder.SayBuilder;
 import com.aldebaran.qi.sdk.design.activity.RobotActivity;
 import com.aldebaran.qi.sdk.design.activity.conversationstatus.SpeechBarDisplayPosition;
 import com.aldebaran.qi.sdk.design.activity.conversationstatus.SpeechBarDisplayStrategy;
+import com.aldebaran.qi.sdk.object.actuation.Animate;
+import com.aldebaran.qi.sdk.object.actuation.Animation;
 import com.aldebaran.qi.sdk.object.conversation.Listen;
 import com.aldebaran.qi.sdk.object.conversation.ListenResult;
 import com.aldebaran.qi.sdk.object.conversation.PhraseSet;
@@ -20,7 +27,7 @@ import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
 import java.util.HashMap;
 import java.util.Map;
-// Heyyyyy
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
     private static final String TAG = "MainActivity";
@@ -53,6 +60,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             updateTabletImage("main_menu");
             menuSystem();
         }
+        updateTabletImage("main_menu");
         // Translation: See you later, have a good day.
         sayText("Kitatama'sino! Have a good day.");
     }
@@ -60,18 +68,21 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // Initial introduction by Pepper
     private void introduction()
     {
+        // Pepper waves while introducing himself
+        runAnimatation(R.raw.hello_a001);
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feeling_well = PhraseText("good", "nice", "well", "fine", "okay", "better", "so so");
         PhraseSet not_feeling_well = PhraseText("not", "bad", "not good", "cry", "sad");
 
         ListenText(feeling_well, not_feeling_well);
-
+        runAnimatation(R.raw.affirmation_a011);
         sayText("Let's learn some Blackfoot together!");
     }
 
     // Menu system with the various options
     private void menuSystem()
     {
+        runAnimatation(R.raw.show_tablet_a002);
         sayText("Would you like to play a game, learn some words, do a little test, or exit?");
 
         PhraseSet play_text = PhraseText("play", "game", "first");
@@ -203,6 +214,23 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 }
             }
         });
+    }
+
+    /*
+    Param: Animation title with the R.raw prefix (e.g. R.raw.elephant_a001)
+    Post: Pepper plays the relevant animation
+    */
+    private void runAnimatation(@RawRes int animation)
+    {
+        Animation build_animation = AnimationBuilder.with(pepper_context)
+                .withResources(animation)
+                .build();
+
+        Animate animate = AnimateBuilder.with(pepper_context)
+                .withAnimation(build_animation)
+                .build();
+
+        animate.async().run();
     }
 
     @Override
