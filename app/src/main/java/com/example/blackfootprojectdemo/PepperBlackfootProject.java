@@ -28,6 +28,7 @@ import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
     private static final String TAG = "MainActivity";
@@ -105,6 +106,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         else if (PhraseSetUtil.equals(matchedMenuOption,test_text))
         {
             sayText("Let's do a test!");
+            testMenu();
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,any_text))
         {
@@ -143,6 +145,64 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 sayText("Yes! " + word + " is " + blackfootWord + ". Let's try another word.");
             }
         }
+    }
+
+
+    // When user chooses to test. Opens/runs test module
+    private void testMenu()
+    {
+        Map<String, String> testingWords = new HashMap<String, String>()
+        {{
+            // Add elements of all
+            put("egg", "owa");
+            put("fish", "mamii");
+            put("bread", "napayin");
+            put("water", "aohkii");
+        }};
+
+        updateTabletImage("testing");
+        sayText("Are you ready to test your knowledge? Let's begin!");
+        int total_score = 0;
+
+        for (String word: testingWords.keySet()) {
+            // Question: Blackfoot word
+            String blackfootWord = testingWords.get(word);
+            sayText("What is " + blackfootWord + " in English?");
+            // Get correct answer
+            PhraseSet correct_word_text = PhraseText(word);
+            PhraseSet matchedTestingOption = ListenText(correct_word_text);
+
+            boolean correct_answer = false;
+            double question_score = 1;
+            double number_tries = 0;
+            // Ask question until answer is correct
+            while (!correct_answer && number_tries < 3) {
+
+                if (PhraseSetUtil.equals(matchedTestingOption,correct_word_text))
+                {
+                    sayText("Yes! " + word + " is " + blackfootWord + ". You got it!");
+                    correct_answer = true;
+                } else {
+                    sayText("Sorry, that is incorrect. Try again! ");
+                    number_tries++;
+                }
+            }
+
+            // Too many wrong times, coaching session.
+            if (number_tries == 3) {
+                sayText(blackfootWord + "is " + word + "in English. Repeat after me " + word + ".");
+                if (PhraseSetUtil.equals(matchedTestingOption,correct_word_text))
+                {
+                    sayText("You got it! Let's continue");
+                }
+            }
+            //update score if number_tries is high enough: 2 tries or less needed
+            // 3 or more tries allocates 0 points
+            if (number_tries <= 2){
+                total_score += 1-(0.25 * number_tries);
+            }
+        } // end of all questions
+        sayText("Your final score is " + total_score + "/" + testingWords.size() +  ". Good job!");
     }
 
     /*
@@ -278,4 +338,6 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         TextView welcomeText = findViewById(R.id.welcomeTextBox);
         welcomeText.setText("Hello, " + user_name + "!");
     }
+    // Easy, medium, difficult. Some say/show the word and m/c the english words. Harder don't have m/c english and are audio only.
+
     */
