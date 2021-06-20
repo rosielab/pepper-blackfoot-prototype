@@ -2,7 +2,6 @@ package com.example.blackfootprojectdemo;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import androidx.annotation.RawRes;
 
@@ -27,6 +26,7 @@ import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
@@ -35,8 +35,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private QiContext pepper_context = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Hide speech bar from primary view (only shown when Pepper's talked to).
@@ -69,21 +68,21 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private void introduction()
     {
         // Pepper waves while introducing himself
-        runAnimatation(R.raw.hello_a001);
+        runAnimation(R.raw.hello_a001);
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feeling_well = PhraseText("good", "nice", "well", "fine", "okay", "better", "so so");
         PhraseSet not_feeling_well = PhraseText("not", "bad", "not good", "cry", "sad");
 
         ListenText(feeling_well, not_feeling_well);
-        runAnimatation(R.raw.affirmation_a011);
+        runAnimation(R.raw.affirmation_a011);
         sayText("Let's learn some Blackfoot together!");
     }
 
     // Menu system with the various options
     private void menuSystem()
     {
-        runAnimatation(R.raw.show_tablet_a002);
-        sayText("Would you like to play a game, learn some words, do a little test, or exit?");
+        runAnimation(R.raw.show_tablet_a002);
+        sayText("Would you like to play a game, learn new words, or test your Blackfoot knowledge?");
 
         PhraseSet play_text = PhraseText("play", "game", "first");
         PhraseSet learn_text = PhraseText("learn", "layout/flashcards", "teach", "second", "middle");
@@ -120,18 +119,62 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private void learnMenu()
     {
         // Hashmap (dictionary) for the flashcard words
-        Map<String, String> flashcardWords = new HashMap<String, String>()
+        Map<String, String> greetingWords = new HashMap<String, String>()
         {{
             // Make sure the English word matches the XML filename (for tablet preview)
+            put("hello", "oki");
+            put("how are you","Tsa niitapiiwa");
+        }};
+
+        Map<String, String> foodWords = new HashMap<String, String>()
+        {{
             put("egg", "owa");
         }};
 
-        for (String word : flashcardWords.keySet())
+        sayText("I can teach you greetings and food names! What would you like to start with?");
+
+        PhraseSet greeting_category = PhraseText("greeting", "first");
+        PhraseSet food_category = PhraseText("food", "second");
+        PhraseSet any_text = PhraseText("anything", "you", "something", "matter", "any");
+
+        PhraseSet matchedMenuOption = ListenText(greeting_category, food_category, any_text);
+
+        Map<String, String> current_hash_set = null;
+        boolean greetingOptionChosen = false;
+        boolean foodOptionChosen = false;
+        if (PhraseSetUtil.equals(matchedMenuOption,greeting_category))
+        {
+            greetingOptionChosen = true;
+            current_hash_set = greetingWords;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,food_category))
+        {
+            foodOptionChosen = true;
+            current_hash_set = foodWords;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,any_text))
+        {
+            sayText("Sure! I'm happy to choose.");
+
+            // Get a random integer and choose the appropriate category.
+            int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+            switch (randomNum)
+            {
+                case 1:
+                    current_hash_set = greetingWords;
+                    break;
+                case 2:
+                    current_hash_set = foodWords;
+                    break;
+            }
+        }
+        for (String word : current_hash_set.keySet())
         {
             // Translation of English word
-            String blackfootWord = flashcardWords.get(word);
+            String blackfootWord = current_hash_set.get(word);
 
-            updateTabletImage(word);
+            // Remove whitespace in word to accompany file name.
+            updateTabletImage(word.replaceAll("\\s+",""));
             sayText(word + " in Blackfoot is " + blackfootWord + ". Repeat after me. " + blackfootWord + ".");
 
             // Ask end user to repeat the translation
@@ -220,7 +263,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     Param: Animation title with the R.raw prefix (e.g. R.raw.elephant_a001)
     Post: Pepper plays the relevant animation
     */
-    private void runAnimatation(@RawRes int animation)
+    private void runAnimation(@RawRes int animation)
     {
         Animation build_animation = AnimationBuilder.with(pepper_context)
                 .withResources(animation)
