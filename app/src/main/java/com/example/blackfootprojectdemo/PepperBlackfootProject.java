@@ -123,7 +123,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         {{
             // Make sure the English word matches the XML filename (for tablet preview)
             put("hello", "oki");
-            put("how are you","Tsa niitapiiwa");
+            put("how are you","tsa niitapiiwa");
+            put("not too bad","matohkwiikii");
         }};
 
         Map<String, String> foodWords = new HashMap<String, String>()
@@ -175,15 +176,27 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
             // Remove whitespace in word to accompany file name.
             updateTabletImage(word.replaceAll("\\s+",""));
-            sayText(word + " in Blackfoot is " + blackfootWord + ". Repeat after me. " + blackfootWord + ".");
+            runAnimation(R.raw.show_tablet_a002);
+            sayText(word + " in Blackfoot is " + blackfootWord + ". Can you now tell me what " + blackfootWord + " is in English?");
 
             // Ask end user to repeat the translation
-            PhraseSet word_text = PhraseText(blackfootWord);
+            PhraseSet word_text = PhraseText(word);
             PhraseSet matchedFlashcardOption = ListenText(word_text);
 
             if (PhraseSetUtil.equals(matchedFlashcardOption,word_text))
             {
-                sayText("Yes! " + word + " is " + blackfootWord + ". Let's try another word.");
+                sayText("Yes! " + word + " is " + blackfootWord + ".");
+                runAnimation(R.raw.affirmation_a011);
+            }
+
+            sayText("Would you like to learn another word?");
+            PhraseSet continueWithWords = PhraseText("yes", "sure", "yep", "go");
+            PhraseSet exitLearning = PhraseText("no", "nope", "exit", "stop", "done", "break", "not anymore", "no more");
+            PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
+
+            if (PhraseSetUtil.equals(continueLearning,exitLearning))
+            {
+                break;
             }
         }
     }
