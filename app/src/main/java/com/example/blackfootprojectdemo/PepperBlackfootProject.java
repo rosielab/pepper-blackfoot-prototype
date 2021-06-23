@@ -228,22 +228,24 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         double totalScore = 0;
 
         // Asks four questions for each word in HashMap
-        for (String englishWord: testingWords.keySet()) {
+        for (String englishWord: testingWords.keySet())
+        {
             boolean correctAnswer = false;
             double numberTries = 0;
 
             updateTabletImage(englishWord.concat("testing"));
             String blackfootWord = testingWords.get(englishWord);
-            sayText("What is " + blackfootWord + " in English?");
 
-            // Get correct/incorrect answers
+            // Get correct/incorrect/unknown answers
             PhraseSet correctWord = PhraseText(englishWord);
             PhraseSet incorrectEnglishWords = incorrectWords(englishWord);
+            PhraseSet dontKnow = PhraseText("eh", "not sure", "I don't know", "don't know", "uh");
 
             // Listen to user and ask question until answer is correct
-            while (!correctAnswer && numberTries < 3) {
-
-                Listen listen = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords).build();
+            while (!correctAnswer && numberTries < 3)
+            {
+                sayText("What is " + blackfootWord + " in English?");
+                Listen listen = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords, dontKnow).build();
                 ListenResult listenResult = listen.run();
                 PhraseSet matchedPhraseSet = listenResult.getMatchedPhraseSet();
 
@@ -253,18 +255,27 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                     sayText("Yes! " + englishWord + " is " + blackfootWord + ". You got it!");
                     runAnimation(R.raw.affirmation_a002);
                     correctAnswer = true;
-                } else if (PhraseSetUtil.equals(matchedPhraseSet, incorrectEnglishWords)) {
+                }
+                else if (PhraseSetUtil.equals(matchedPhraseSet, incorrectEnglishWords))
+                {
                     sayText("Hmm, I don't think that is correct. Try again!");
                     runAnimation(R.raw.thinking_a001);
                     numberTries++;
                 }
+                else if (PhraseSetUtil.equals(matchedPhraseSet, dontKnow))
+                {
+                    sayText("Don't worry it's okay, here I'll help you!");
+                    numberTries = 3;
+                }
 
-                // Too many wrong times, review answer
-                if (numberTries == 3) {
+                // Too many wrong tries, review answer
+                if (numberTries == 3)
+                {
                     sayText(blackfootWord + " is " + englishWord + " in English. Repeat after me: " + englishWord + ".");
                     runAnimation(R.raw.show_tablet_a002);
                     boolean continueBool = false;
-                    while (!continueBool) {
+                    while (!continueBool)
+                    {
                         PhraseSet matchedCorrectionOption = ListenText(correctWord);
                         if (PhraseSetUtil.equals(matchedCorrectionOption,correctWord))
                         {
@@ -276,15 +287,15 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 }
             } // end while loop: got correct answer
 
-            //update score if number_tries is high enough: 2 tries or less needed
-            // 3 or more tries allocates 0 points
-            if (numberTries <= 2){
+            //update score if number_tries is high enough: 2 tries or less needed. 3 or more tries allocates 0 points
+            if (numberTries <= 2)
+            {
                 totalScore += 1-(0.25 * numberTries);
             }
         } // end of all questions, return to main menu
         sayText("Your final score is " + totalScore + "/" + testingWords.size() +  ".0 or " + totalScore/testingWords.size()*100 + "%. Good job!");
         runAnimation(R.raw.affirmation_a011);
-    }
+    } // end testMenu()
 
         /*
     Pre: Correct answer to testMenu)() question
@@ -293,31 +304,30 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     */
     private PhraseSet incorrectWords(String englishWord)
     {
-        if (englishWord  == "egg")
+        PhraseSet incorrectEnglishWords;
+        if (englishWord.equals("egg"))
         {
-            PhraseSet incorrectEnglishWords = PhraseText("fish", "bread", "water");
+            incorrectEnglishWords = PhraseText("fish", "bread", "water");
             return incorrectEnglishWords;
-        } else if (englishWord == "fish")
+        } else if (englishWord.equals("fish"))
         {
-            PhraseSet incorrectEnglishWords = PhraseText("egg", "bread", "water");
-            return incorrectEnglishWords;
-        }
-        else if (englishWord == "bread")
-        {
-            PhraseSet incorrectEnglishWords = PhraseText("egg", "fish", "water");
+            incorrectEnglishWords = PhraseText("egg", "bread", "water");
             return incorrectEnglishWords;
         }
-        else if (englishWord == "water")
+        else if (englishWord.equals("bread"))
         {
-            PhraseSet incorrectEnglishWords = PhraseText("egg", "bread", "fish");
+            incorrectEnglishWords = PhraseText("egg", "fish", "water");
             return incorrectEnglishWords;
         }
-
+        else if (englishWord.equals("water"))
+        {
+            incorrectEnglishWords = PhraseText("egg", "bread", "fish");
+            return incorrectEnglishWords;
+        }
         // never hits, here to not throw an error
-        PhraseSet incorrectEnglishWords = PhraseText("egg", "bread", "fish");
+        incorrectEnglishWords = PhraseText("egg", "bread", "fish");
         return incorrectEnglishWords;
     }
-
 
     /*
     Param: String text that Pepper should say
