@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
     private static final String TAG = "MainActivity";
@@ -104,6 +105,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         else if (PhraseSetUtil.equals(matchedMenuOption,test_text))
         {
             sayText("Let's do a test!");
+            testMenu();
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,any_text))
         {
@@ -199,6 +201,72 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 break;
             }
         }
+    }
+
+
+    // When user chooses to test. Opens/runs test module
+    private void testMenu()
+    {
+        Map<String, String> testingWords = new HashMap<String, String>()
+        {{
+            // Add elements of all m/c
+            put("egg", "owa");
+            put("fish", "mamii");
+            put("bread", "napayin");
+            put("water", "aohkii");
+        }};
+
+        updateTabletImage("testing");
+        sayText("Are you ready to test your knowledge? Let's begin!");
+        int totalScore = 0;
+
+        // Asks four questions
+        for (String englishWord: testingWords.keySet()) {
+            String blackfootWord = testingWords.get(englishWord);
+            sayText("What is " + blackfootWord + " in English?");
+            // Get correct answer
+            PhraseSet correctWord = PhraseText(englishWord);
+            PhraseSet matchedTestingOption = ListenText(correctWord);
+
+            // remove correct answer from HashMap, send rest to incorrect answers
+            String correctKey = englishWord;
+            String correctValue = blackfootWord;
+            //testingWords.remove(englishWord);
+
+            //PhraseSet incorrectWords = PhraseText(testingWords.get("egg"), testingWords.get("fish"), testingWords.get("bread"), testingWords.get("water"));
+            //PhraseSet incorrectTestingQuestions = ListenText(incorrectWords);
+
+            boolean correctAnswer = false;
+            double numberTries = 0;
+            // Ask question until answer is correct
+            while (!correctAnswer && numberTries < 3) {
+
+                if (PhraseSetUtil.equals(matchedTestingOption,correctWord))
+                {
+                    sayText("Yes! " + englishWord + " is " + blackfootWord + ". You got it!");
+                    correctAnswer = true;
+                } else /*(PhraseSetUtil.equals(incorrectTestingQuestions, incorrectWords)) */ {
+                    sayText("Sorry, that is incorrect. Try again! ");
+                    numberTries++;
+                }
+            }
+
+            // Too many wrong times, review answer
+            if (numberTries == 3) {
+                sayText(blackfootWord + "is " + englishWord + "in English. Repeat after me " + englishWord + ".");
+                if (PhraseSetUtil.equals(matchedTestingOption,correctWord))
+                {
+                    sayText("You got it! Let's continue");
+                }
+            }
+            //update score if number_tries is high enough: 2 tries or less needed
+            // 3 or more tries allocates 0 points
+            if (numberTries <= 2){
+                totalScore += 1-(0.25 * numberTries);
+            }
+            //testingWords.put(englishWord, blackfootWord);
+        } // end of all questions, return to main menu
+        sayText("Your final score is " + totalScore + "/" + testingWords.size() +  ". Good job!");
     }
 
     /*
@@ -334,4 +402,6 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         TextView welcomeText = findViewById(R.id.welcomeTextBox);
         welcomeText.setText("Hello, " + user_name + "!");
     }
+    // Easy, medium, difficult. Some say/show the word and m/c the english words. Harder don't have m/c english and are audio only.
+
     */
