@@ -214,6 +214,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // When user chooses to test. Opens/runs test module
     private void testMenu()
     {
+        // HashMap of all words testing
         Map<String, String> testingWords = new HashMap<String, String>()
         {{
             // Add elements of all m/c
@@ -233,12 +234,27 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             boolean correctAnswer = false;
             double numberTries = 0;
 
+            //set correct word's corresponding image, get string correct answer from HashMap
             updateTabletImage(englishWord.concat("testing"));
             String blackfootWord = testingWords.get(englishWord);
 
-            // Get correct/incorrect/unknown answers
+
+            // loop through HashMap keys, adds all but correct to string of incorrect words, separate by commas.
+            String incorrectEnglishWordsString = "";
+            int keyCounter = 0;
+            for (String keyName: testingWords.keySet()) {
+                keyCounter++;
+                if (!keyName.equals(englishWord)) {
+                    incorrectEnglishWordsString += keyName.toString();
+                }
+                if (keyCounter != testingWords.size())
+                {
+                    incorrectEnglishWordsString += ",";
+                }
+            }
+            // Get correct/incorrect/unknown answers. split incorrect word string into separate word strings
             PhraseSet correctWord = PhraseText(englishWord);
-            PhraseSet incorrectEnglishWords = incorrectWords(englishWord);
+            PhraseSet incorrectEnglishWords = PhraseText(incorrectEnglishWordsString.split(","));
             PhraseSet dontKnow = PhraseText("eh", "not sure", "I don't know", "don't know", "uh");
 
             // Listen to user and ask question until answer is correct
@@ -297,37 +313,6 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
-        /*
-    Pre: Correct answer to testMenu)() question
-    Param: Phrase Set of incorrect answers
-    Post: Pepper can isolate correct from incorrect answers
-    */
-    private PhraseSet incorrectWords(String englishWord)
-    {
-        PhraseSet incorrectEnglishWords;
-        if (englishWord.equals("egg"))
-        {
-            incorrectEnglishWords = PhraseText("fish", "bread", "water");
-            return incorrectEnglishWords;
-        } else if (englishWord.equals("fish"))
-        {
-            incorrectEnglishWords = PhraseText("egg", "bread", "water");
-            return incorrectEnglishWords;
-        }
-        else if (englishWord.equals("bread"))
-        {
-            incorrectEnglishWords = PhraseText("egg", "fish", "water");
-            return incorrectEnglishWords;
-        }
-        else if (englishWord.equals("water"))
-        {
-            incorrectEnglishWords = PhraseText("egg", "bread", "fish");
-            return incorrectEnglishWords;
-        }
-        // never hits, here to not throw an error
-        incorrectEnglishWords = PhraseText("egg", "bread", "fish");
-        return incorrectEnglishWords;
-    }
 
     /*
     Param: String text that Pepper should say
