@@ -1,6 +1,8 @@
 package com.example.blackfootprojectdemo;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.RawRes;
@@ -29,11 +31,14 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
+    MediaPlayer mediaPlayer;
     private static final String TAG = "MainActivity";
     private static boolean continue_looping = true;
     private QiContext pepper_context = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Hide speech bar from primary view (only shown when Pepper's talked to).
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.IMMERSIVE);
         setSpeechBarDisplayPosition(SpeechBarDisplayPosition.TOP);
+        mediaPlayer = new MediaPlayer();
         setContentView(R.layout.main_menu);
 
         // Register the RobotLifecycleCallbacks to this Activity.
@@ -70,6 +76,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         // Pepper waves while introducing himself
         runAnimation(R.raw.hello_a001);
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.greeting);
+        mediaPlayer.start();
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feeling_well = PhraseText("good", "nice", "well", "fine", "okay", "better", "so so", "great", "yes", "hello");
         PhraseSet not_feeling_well = PhraseText("not", "bad", "not good", "cry", "sad", "no");
@@ -313,6 +321,28 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
+    /*private void playAudio(String audioString, MediaPlayer mediaPlayer)
+    {
+        Map<String, String> audioFiles = new HashMap<String, String>()
+        {{
+            put("greeting", R.raw.greeting);
+            put("fish", "mamii");
+            put("bread", "napayin");
+            put("water", "aohkii");
+        }};
+        try
+        {
+            //int audioId = getResources().getIdentifier(audioFile, "raw", getPackageName())
+            int audioId = getResources().getIdentifier(audioString, "raw",getPackageName());
+            mediaPlayer = MediaPlayer.create(R.raw.greeting);
+            mediaPlayer.start();
+        }
+        catch (Exception incorrectFileName)
+        {
+            Log.e(TAG, "File not found: " + incorrectFileName);
+            setContentView(R.layout.activity_main);
+        }
+    } */
 
     /*
     Param: String text that Pepper should say
@@ -421,6 +451,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         super.onPause();
         QiSDK.unregister(this);
+        mediaPlayer.stop();
         Log.d("onPause", "QiSDK.unregister pause");
     }
 
@@ -436,6 +467,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         super.onDestroy();
         this.pepper_context = null;
         QiSDK.unregister(this, this);
+        mediaPlayer.release();
         super.onDestroy();
     }
 }
@@ -448,5 +480,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         welcomeText.setText("Hello, " + user_name + "!");
     }
     // Easy, medium, difficult. Some say/show the word and m/c the english words. Harder don't have m/c english and are audio only.
-
+    //Attributions:
+    //Sound effects obtained from https://www.zapsplat.com
+    //Additional sound effects from https://www.zapsplat.com
     */
