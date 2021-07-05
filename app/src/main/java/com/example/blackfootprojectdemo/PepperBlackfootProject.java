@@ -1,6 +1,8 @@
 package com.example.blackfootprojectdemo;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import androidx.annotation.RawRes;
@@ -29,11 +31,14 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 
+
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks
 {
+    MediaPlayer mediaPlayer;
     private static final String TAG = "MainActivity";
     private static boolean continue_looping = true;
     private QiContext pepper_context = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Hide speech bar from primary view (only shown when Pepper's talked to).
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.IMMERSIVE);
         setSpeechBarDisplayPosition(SpeechBarDisplayPosition.TOP);
+        mediaPlayer = new MediaPlayer();
         setContentView(R.layout.main_menu);
 
         // Register the RobotLifecycleCallbacks to this Activity.
@@ -70,6 +76,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         // Pepper waves while introducing himself
         runAnimation(R.raw.hello_a001);
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.greeting);
+        mediaPlayer.start();
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feeling_well = PhraseText("good", "nice", "well", "fine", "okay", "better", "so so", "great", "yes", "hello");
         PhraseSet not_feeling_well = PhraseText("not", "bad", "not good", "cry", "sad", "no");
@@ -214,6 +222,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // When user chooses to test. Opens/runs test module
     private void testMenu()
     {
+        // HashMap of all words testing
         Map<String, String> testingWords = new HashMap<String, String>()
         {{
             // Add elements of all m/c
@@ -233,12 +242,27 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             boolean correctAnswer = false;
             double numberTries = 0;
 
+            //set correct word's corresponding image, get string correct answer from HashMap
             updateTabletImage(englishWord.concat("testing"));
             String blackfootWord = testingWords.get(englishWord);
 
-            // Get correct/incorrect/unknown answers
+
+            // loop through HashMap keys, adds all but correct to string of incorrect words, separate by commas.
+            String incorrectEnglishWordsString = "";
+            int keyCounter = 0;
+            for (String keyName: testingWords.keySet()) {
+                keyCounter++;
+                if (!keyName.equals(englishWord)) {
+                    incorrectEnglishWordsString += keyName.toString();
+                }
+                if (keyCounter != testingWords.size())
+                {
+                    incorrectEnglishWordsString += ",";
+                }
+            }
+            // Get correct/incorrect/unknown answers. split incorrect word string into separate word strings
             PhraseSet correctWord = PhraseText(englishWord);
-            PhraseSet incorrectEnglishWords = incorrectWords(englishWord);
+            PhraseSet incorrectEnglishWords = PhraseText(incorrectEnglishWordsString.split(","));
             PhraseSet dontKnow = PhraseText("eh", "not sure", "I don't know", "don't know", "uh");
 
             // Listen to user and ask question until answer is correct
@@ -297,37 +321,28 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
-        /*
-    Pre: Correct answer to testMenu)() question
-    Param: Phrase Set of incorrect answers
-    Post: Pepper can isolate correct from incorrect answers
-    */
-    private PhraseSet incorrectWords(String englishWord)
+    /*private void playAudio(String audioString, MediaPlayer mediaPlayer)
     {
-        PhraseSet incorrectEnglishWords;
-        if (englishWord.equals("egg"))
+        Map<String, String> audioFiles = new HashMap<String, String>()
+        {{
+            put("greeting", R.raw.greeting);
+            put("fish", "mamii");
+            put("bread", "napayin");
+            put("water", "aohkii");
+        }};
+        try
         {
-            incorrectEnglishWords = PhraseText("fish", "bread", "water");
-            return incorrectEnglishWords;
-        } else if (englishWord.equals("fish"))
-        {
-            incorrectEnglishWords = PhraseText("egg", "bread", "water");
-            return incorrectEnglishWords;
+            //int audioId = getResources().getIdentifier(audioFile, "raw", getPackageName())
+            int audioId = getResources().getIdentifier(audioString, "raw",getPackageName());
+            mediaPlayer = MediaPlayer.create(R.raw.greeting);
+            mediaPlayer.start();
         }
-        else if (englishWord.equals("bread"))
+        catch (Exception incorrectFileName)
         {
-            incorrectEnglishWords = PhraseText("egg", "fish", "water");
-            return incorrectEnglishWords;
+            Log.e(TAG, "File not found: " + incorrectFileName);
+            setContentView(R.layout.activity_main);
         }
-        else if (englishWord.equals("water"))
-        {
-            incorrectEnglishWords = PhraseText("egg", "bread", "fish");
-            return incorrectEnglishWords;
-        }
-        // never hits, here to not throw an error
-        incorrectEnglishWords = PhraseText("egg", "bread", "fish");
-        return incorrectEnglishWords;
-    }
+    } */
 
     /*
     Param: String text that Pepper should say
@@ -436,6 +451,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         super.onPause();
         QiSDK.unregister(this);
+        mediaPlayer.stop();
         Log.d("onPause", "QiSDK.unregister pause");
     }
 
@@ -451,6 +467,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         super.onDestroy();
         this.pepper_context = null;
         QiSDK.unregister(this, this);
+        mediaPlayer.release();
         super.onDestroy();
     }
 }
@@ -463,5 +480,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         welcomeText.setText("Hello, " + user_name + "!");
     }
     // Easy, medium, difficult. Some say/show the word and m/c the english words. Harder don't have m/c english and are audio only.
-
+    //Attributions:
+    //Sound effects obtained from https://www.zapsplat.com
+    //Additional sound effects from https://www.zapsplat.com
     */
