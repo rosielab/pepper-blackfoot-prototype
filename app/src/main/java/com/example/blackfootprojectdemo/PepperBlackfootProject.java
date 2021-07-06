@@ -78,6 +78,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         // Pepper waves while introducing himself
         runAnimation(R.raw.hello_a001);
+        playMedia("greeting"); // length is 13s, +1s delay on Pepper
+        pausePepper(14);
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feelingWell = PhraseText(feelingWellConstant);
         PhraseSet feelingBad = PhraseText(feelingBadConstant);
@@ -147,14 +149,14 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
         PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
 
-        Map<String, String> current_hash_set = null;
+        Map<String, String> currentHashSet = null;
         if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
         {
-            current_hash_set = greetingWords;
+            currentHashSet = greetingWords;
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
         {
-            current_hash_set = foodWords;
+            currentHashSet = foodWords;
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
         {
@@ -165,20 +167,20 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             switch (randomNum)
             {
                 case 1:
-                    current_hash_set = greetingWords;
+                    currentHashSet = greetingWords;
                     break;
                 case 2:
-                    current_hash_set = foodWords;
+                    currentHashSet = foodWords;
                     break;
             }
         }
-        assert current_hash_set != null;
+        assert currentHashSet != null;
 
         // Iterate through each word until the user wants to stop
-        for (String word : current_hash_set.keySet())
+        for (String word : currentHashSet.keySet())
         {
             // Translation of English word
-            String blackfootWord = current_hash_set.get(word);
+            String blackfootWord = currentHashSet.get(word);
 
             // Remove whitespace and characters in word to accompany file name.
             String wordWithoutSpaces = word.replaceAll("[\\s .?']","");
@@ -189,9 +191,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             // Ask the user to speak the English translation
             sayText(word + " in Blackfoot is " + blackfootWord);
             playMedia(learnWordAudioFile);
+            pausePepper(1);
 
             sayText("Can you now tell me what " + blackfootWord);
             playMedia(learnWordAudioFile);
+            pausePepper(1);
             sayText(" is in English?");
 
             // Ask end user to repeat the translation
@@ -202,6 +206,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             {
                 sayText("Yes! " + word + " is " + blackfootWord + ".");
                 playMedia(learnWordAudioFile);
+                pausePepper(1);
                 runAnimation(R.raw.affirmation_a011);
             }
 
@@ -246,23 +251,23 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         sayText("Let's begin!");
         runAnimation(R.raw.nicereaction_a002);
         totalUserScore = 0;
-        testingWordsSize = testingWords.size();
+        testingWordsSize = foodWords.size();
 
         // Asks four questions for each word in HashMap
-        for (String englishWord: testingWords.keySet())
+        for (String englishWord: foodWords.keySet())
         {
             boolean correctAnswer = false;
             double numberTries = 0;
 
             //set correct word's corresponding image, get string correct answer from HashMap
             updateTabletImage(englishWord.concat("testing"));
-            String blackfootWord = testingWords.get(englishWord);
+            String blackfootWord = foodWords.get(englishWord);
 
 
             // loop through HashMap keys, adds all but correct to string of incorrect words, separate by commas.
             String incorrectEnglishWordsString = "";
             int keyCounter = 0;
-            for (String keyName: testingWords.keySet()) {
+            for (String keyName: foodWords.keySet()) {
                 keyCounter++;
                 if (!keyName.equals(englishWord)) {
                     incorrectEnglishWordsString += keyName;

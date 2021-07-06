@@ -42,15 +42,18 @@ public interface PepperConstants
     Map<String, String> foodWords = new HashMap<String, String>()
     {{
         put("egg", "owa");
+        put("fish", "mamii");
+        put("bread", "napayin");
+        put("water", "aohkii");
     }};
 
     // **HashMap of Test Function Words**
-    Map<String, String> testingWords = new HashMap<String, String>()
+    /*Map<String, String> testingWords = new HashMap<String, String>()
     {{
         // Add elements of all m/c
         put("egg", "owa");
         put("fish", "mamii");
         put("bread", "napayin");
         put("water", "aohkii");
-    }};
+    }}; */
 }
