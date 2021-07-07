@@ -25,7 +25,7 @@ public interface PepperConstants
 
     // **Miscellaneous Constants**
     String[] affirmationConstant = new String[]{"great", "awesome", "cool", "sweet", "nice"};
-    String[] correctFeedbackConstant = new String[]{"good job", "nice work", "right on", "keep it up", "way to go", "you nailed it", "yes", "you got it"};
+    String[] correctFeedbackConstant = new String[]{"good job", "nice work", "right on", "keep it up", "way to go", "you nailed it", "I'm impressed", "you got it"};
     String[] incorrectFeedbackConstant = new String[]{"almost got it", "so close", "not quite", "good try", "I don't think that's correct"};
 
 
@@ -42,6 +42,8 @@ public interface PepperConstants
         put("hello friend","oki napi");
         put("i'm doing good. you?","tsikohssokopii. kistoo?");
     }};
+    String[] greetingWordsList = new String[]{"hello", "how are you", "not too bad", "let's go", "yes", "no", "hello friend", "i'm doing good. you?"};
+
 
     // **HashMap of Food Words**
     Map<String, String> foodWords = new HashMap<String, String>()
@@ -51,6 +53,8 @@ public interface PepperConstants
         put("bread", "napayin");
         put("water", "aohkii");
     }};
+    String[] foodWordsList = new String[]{"egg", "fish", "bread", "water"};
+
 
     // **HashMap of Test Function Words**
     /*Map<String, String> testingWords = new HashMap<String, String>()
