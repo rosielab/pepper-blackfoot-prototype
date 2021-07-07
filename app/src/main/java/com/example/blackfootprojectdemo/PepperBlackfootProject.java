@@ -145,6 +145,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // Pepper's Learn Function to teach words
     private void learnMenu()
     {
+        updateTabletImage("vocabularysplashscreen");
         sayText("I can teach you greetings and food names! What would you like to start with?");
         runAnimation(R.raw.nicereaction_a002);
 
@@ -256,6 +257,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // When user chooses to test. Opens/runs test module
     private void testMenu()
     {
+        updateTabletImage("vocabularysplashscreen");
         sayText("I can test you on greetings and food names! What would you like to start with?");
         runAnimation(R.raw.nicereaction_a002);
 
@@ -331,9 +333,10 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             boolean correctAnswer = false;
             double numberTries = 0;
 
-            // Set vocab question's corresponding image
-            updateTabletImage(englishWord.replaceAll("[\\s .?']","").concat("testing"));
-
+            // Set vocab question's corresponding image and Blackfoot audio file
+            String wordWithoutSpaces = englishWord.replaceAll("[\\s .?']","");
+            String testWordAudioFile = "learn_" + wordWithoutSpaces;
+            updateTabletImage(wordWithoutSpaces + "testing");
 
             // Get/set incorrect answers from HashMap
             String incorrectEnglishWordsString = "";
@@ -356,6 +359,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             while (!correctAnswer && numberTries < 3)
             {
                 sayText("What is " + blackfootWord + " in English?");
+                playMedia(testWordAudioFile);
+                pausePepper(1);
                 Listen listen = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords, anyText).build();
                 ListenResult listenResult = listen.run();
                 PhraseSet matchedPhraseSet = listenResult.getMatchedPhraseSet();
@@ -364,6 +369,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 if (PhraseSetUtil.equals(matchedPhraseSet,correctWord))
                 {
                     sayText( "Yes, " + randomString(correctFeedbackConstant) + "! " + englishWord + " is " + blackfootWord + ".");
+                    playMedia(testWordAudioFile);
+                    pausePepper(1);
                     runAnimation(R.raw.affirmation_a002);
                     correctAnswer = true;
                 }
@@ -383,6 +390,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 if (numberTries == 3)
                 {
                     sayText(blackfootWord + " is " + englishWord + " in English. Repeat after me: " + englishWord + ".");
+                    playMedia(testWordAudioFile);
                     runAnimation(R.raw.show_tablet_a002);
                     boolean continueBool = false;
                     while (!continueBool)
