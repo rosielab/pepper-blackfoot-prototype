@@ -23,13 +23,18 @@ public interface PepperConstants
     String[] learnFoodConstant = new String[]{"food", "second"};
     String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay"};
 
+    // **Miscellaneous Constants**
+    String[] affirmationConstant = new String[]{"great", "awesome", "cool", "sweet", "nice"};
+    String[] correctFeedbackConstant = new String[]{"good job", "nice work", "right on", "keep it up", "way to go", "you nailed it", "yes", "you got it"};
+    String[] incorrectFeedbackConstant = new String[]{"almost got it", "so close", "not quite", "good try", "I don't think that's correct"};
+
 
     // **HashMap of Greeting Words**
     Map<String, String> greetingWords = new HashMap<String, String>()
     {{
         // Make sure the English word matches the XML filename (for tablet preview)
         put("hello", "oki");
-        put("how are you","tsa niitapiiwa");
+        put("how are you","tsa niita'piiwa");
         put("not too bad","matohkwiikii");
         put("let's go","okí");
         put("yes","aa");
