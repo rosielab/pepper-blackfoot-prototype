@@ -30,14 +30,11 @@ import com.aldebaran.qi.sdk.object.humanawareness.ApproachHuman;
 import com.aldebaran.qi.sdk.object.humanawareness.HumanAwareness;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
-//import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-//import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -48,6 +45,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private static boolean continue_looping;
     private QiContext pepper_context = null;
     private double totalUserScore = 0;
+    private int totalWordsTested = 0;
     private int testingWordsSize = 0;
 
     @Override
@@ -84,9 +82,13 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         // Pepper waves while introducing himself
         runAnimation(R.raw.hello_a001);
+        /*
         playMedia("greeting"); // length is 13s, +1s delay on Pepper
         pausePepper(14);
-        sayText("Oki! I'm Pepper! How are you doing today?");
+        */
+        sayText("Oki!");
+        playMedia("learn_hello");
+        sayText("I'm Pepper! How are you doing today?");
         PhraseSet feelingWell = PhraseText(feelingWellConstant);
         PhraseSet feelingBad = PhraseText(feelingBadConstant);
 
@@ -230,7 +232,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
                 // Pause Pepper for 5 seconds.
                 pausePepper(5);
-                sayText(randomString(affirmationConstant) + "! Would you like to hear that again?.");
+                sayText(randomString(affirmationConstant) + "! Would you like to hear that again?");
                 runAnimation(R.raw.nicereaction_a002);
 
                 PhraseSet listenAgain = ListenText(continueWithWords, exitLearning);
@@ -249,6 +251,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
             if (PhraseSetUtil.equals(continueLearning,exitLearning))
             {
+                sayText("Oh okay, for sure!");
                 break;
             }
         }
@@ -265,6 +268,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
         PhraseSet foodCategory = PhraseText(learnFoodConstant);
         PhraseSet anyText = PhraseText(anyTextConstant);
+        PhraseSet continueWithWords = PhraseText(continueConstant);
+        PhraseSet exitLearning = PhraseText(exitTextConstant);
 
         PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
 
@@ -307,6 +312,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         sayText("Alright, let's begin!");
         runAnimation(R.raw.nicereaction_a002);
         totalUserScore = 0;
+        totalWordsTested = 0;
         testingWordsSize = currentHashSet.size();
 
         // randomize vocabulary so each test is in different order
@@ -315,13 +321,14 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Asks question for each vocab work in wordList and thus HashMap
         for (String listWord: wordList)
         {
+            totalWordsTested++;
             String englishWord = null;
             String blackfootWord = null;
 
             // Match randomized question to HashMap, set english/blackfoot answers
             for (String word: currentHashSet.keySet())
             {
-                if (listWord == word)
+                if (listWord.equals(word))
                 {
                     englishWord = word;
                     blackfootWord = currentHashSet.get(englishWord);
@@ -334,6 +341,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             double numberTries = 0;
 
             // Set vocab question's corresponding image and Blackfoot audio file
+            assert englishWord != null;
             String wordWithoutSpaces = englishWord.replaceAll("[\\s .?']","");
             String testWordAudioFile = "learn_" + wordWithoutSpaces;
             updateTabletImage(wordWithoutSpaces + "testing");
@@ -398,7 +406,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                         PhraseSet matchedCorrectionOption = ListenText(correctWord);
                         if (PhraseSetUtil.equals(matchedCorrectionOption,correctWord))
                         {
-                            sayText(randomString(correctFeedbackConstant) + "! Let's continue.");
+                            sayText(randomString(correctFeedbackConstant) + "!");
                             runAnimation(R.raw.affirmation_a011);
                             continueBool = true;
                         }
@@ -411,16 +419,26 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             {
                 totalUserScore += 1-(0.25 * numberTries);
             }
+
+            sayText("Would you like to get tested on another word?");
+            PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
+
+            if (PhraseSetUtil.equals(continueLearning,exitLearning))
+            {
+                sayText("Oh okay, no worries!");
+                break;
+            }
+
         } // end of all questions, return to main menu
 
-        sayText("Your final score is " + totalUserScore + "/" + testingWordsSize +  ".0 or " + totalUserScore/testingWordsSize*100 + "%. Good job!");
+        sayText("Your final score is " + totalUserScore + "/" + totalWordsTested +  ".0 or " + totalUserScore/totalWordsTested*100 + "%. Good job!");
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
 
     private void checkScore()
     {
-        sayText("Your last score was " + totalUserScore + " out of " + testingWordsSize + ". Feel free to test your knowledge again!");
+        sayText("Your last score was " + totalUserScore + " out of " + totalWordsTested + ". Feel free to test your knowledge again!");
     }
 
     /*
