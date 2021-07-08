@@ -30,8 +30,14 @@ import com.aldebaran.qi.sdk.object.humanawareness.ApproachHuman;
 import com.aldebaran.qi.sdk.object.humanawareness.HumanAwareness;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
-import java.util.HashMap;
+//import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+//import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 
@@ -78,6 +84,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     {
         // Pepper waves while introducing himself
         runAnimation(R.raw.hello_a001);
+        playMedia("greeting"); // length is 13s, +1s delay on Pepper
+        pausePepper(14);
         sayText("Oki! I'm Pepper! How are you doing today?");
         PhraseSet feelingWell = PhraseText(feelingWellConstant);
         PhraseSet feelingBad = PhraseText(feelingBadConstant);
@@ -137,6 +145,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // Pepper's Learn Function to teach words
     private void learnMenu()
     {
+        updateTabletImage("vocabularysplashscreen");
         sayText("I can teach you greetings and food names! What would you like to start with?");
         runAnimation(R.raw.nicereaction_a002);
 
@@ -147,14 +156,14 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
         PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
 
-        Map<String, String> current_hash_set = null;
+        Map<String, String> currentHashSet = null;
         if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
         {
-            current_hash_set = greetingWords;
+            currentHashSet = greetingWords;
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
         {
-            current_hash_set = foodWords;
+            currentHashSet = foodWords;
         }
         else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
         {
@@ -165,20 +174,21 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             switch (randomNum)
             {
                 case 1:
-                    current_hash_set = greetingWords;
+                    currentHashSet = greetingWords;
                     break;
                 case 2:
-                    current_hash_set = foodWords;
+                    currentHashSet = foodWords;
                     break;
             }
         }
-        assert current_hash_set != null;
+        assert currentHashSet != null;
 
         // Iterate through each word until the user wants to stop
-        for (String word : current_hash_set.keySet())
+        for (String word : currentHashSet.keySet())
         {
+
             // Translation of English word
-            String blackfootWord = current_hash_set.get(word);
+            String blackfootWord = currentHashSet.get(word);
 
             // Remove whitespace and characters in word to accompany file name.
             String wordWithoutSpaces = word.replaceAll("[\\s .?']","");
@@ -189,9 +199,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             // Ask the user to speak the English translation
             sayText(word + " in Blackfoot is " + blackfootWord);
             playMedia(learnWordAudioFile);
+            pausePepper(1);
 
             sayText("Can you now tell me what " + blackfootWord);
             playMedia(learnWordAudioFile);
+            pausePepper(1);
             sayText(" is in English?");
 
             // Ask end user to repeat the translation
@@ -200,8 +212,9 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
             if (PhraseSetUtil.equals(matchedFlashcardOption,word_text))
             {
-                sayText("Yes! " + word + " is " + blackfootWord + ".");
+                sayText(randomString(correctFeedbackConstant) + "! " + word + " is " + blackfootWord + ".");
                 playMedia(learnWordAudioFile);
+                pausePepper(1);
                 runAnimation(R.raw.affirmation_a011);
             }
 
@@ -217,7 +230,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
                 // Pause Pepper for 5 seconds.
                 pausePepper(5);
-                sayText("Very nice! " + "Would you like to hear that again?.");
+                sayText(randomString(affirmationConstant) + "! Would you like to hear that again?.");
                 runAnimation(R.raw.nicereaction_a002);
 
                 PhraseSet listenAgain = ListenText(continueWithWords, exitLearning);
@@ -230,7 +243,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             } while (continueListeningBlackfoot);
 
             // Ask the user if they would like to continue to exit.
-            sayText("Awesome, shall I continue with another word?");
+
+            sayText("You're doing great, shall I continue with another word?");
             PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
 
             if (PhraseSetUtil.equals(continueLearning,exitLearning))
@@ -243,26 +257,91 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     // When user chooses to test. Opens/runs test module
     private void testMenu()
     {
-        sayText("Let's begin!");
+        updateTabletImage("vocabularysplashscreen");
+        sayText("I can test you on greetings and food names! What would you like to start with?");
+        runAnimation(R.raw.nicereaction_a002);
+
+        // Ask the user which word categories they would like to learn first.
+        PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
+        PhraseSet foodCategory = PhraseText(learnFoodConstant);
+        PhraseSet anyText = PhraseText(anyTextConstant);
+
+        PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
+
+        // Initialize testing HashMap and corresponding matching string key array
+        Map<String, String> currentHashSet = null;
+        String[] wordList = null;
+
+        // Listen for vocabulary test user would like, set matching vocabulary set
+        if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
+        {
+            currentHashSet = greetingWords;
+            wordList = greetingWordsList;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
+        {
+            currentHashSet = foodWords;
+            wordList = foodWordsList;
+        }
+        // Randomize vocab test choice for user
+        else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
+        {
+            sayText("Sure! I'm happy to choose.");
+
+            // Get a random integer and choose the appropriate category.
+            int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+            switch (randomNum)
+            {
+                case 1:
+                    currentHashSet = greetingWords;
+                    wordList = greetingWordsList;
+                    break;
+                case 2:
+                    currentHashSet = foodWords;
+                    wordList = foodWordsList;
+                    break;
+            }
+        }
+        assert currentHashSet != null;
+
+        sayText("Alright, let's begin!");
         runAnimation(R.raw.nicereaction_a002);
         totalUserScore = 0;
-        testingWordsSize = testingWords.size();
+        testingWordsSize = currentHashSet.size();
 
-        // Asks four questions for each word in HashMap
-        for (String englishWord: testingWords.keySet())
+        // randomize vocabulary so each test is in different order
+        shuffleVocabulary(wordList);
+
+        // Asks question for each vocab work in wordList and thus HashMap
+        for (String listWord: wordList)
         {
+            String englishWord = null;
+            String blackfootWord = null;
+
+            // Match randomized question to HashMap, set english/blackfoot answers
+            for (String word: currentHashSet.keySet())
+            {
+                if (listWord == word)
+                {
+                    englishWord = word;
+                    blackfootWord = currentHashSet.get(englishWord);
+
+                }
+            }
+
+            // Reset number of tries and variable controlling when to move to next question
             boolean correctAnswer = false;
             double numberTries = 0;
 
-            //set correct word's corresponding image, get string correct answer from HashMap
-            updateTabletImage(englishWord.concat("testing"));
-            String blackfootWord = testingWords.get(englishWord);
+            // Set vocab question's corresponding image and Blackfoot audio file
+            String wordWithoutSpaces = englishWord.replaceAll("[\\s .?']","");
+            String testWordAudioFile = "learn_" + wordWithoutSpaces;
+            updateTabletImage(wordWithoutSpaces + "testing");
 
-
-            // loop through HashMap keys, adds all but correct to string of incorrect words, separate by commas.
+            // Get/set incorrect answers from HashMap
             String incorrectEnglishWordsString = "";
             int keyCounter = 0;
-            for (String keyName: testingWords.keySet()) {
+            for (String keyName: currentHashSet.keySet()) {
                 keyCounter++;
                 if (!keyName.equals(englishWord)) {
                     incorrectEnglishWordsString += keyName;
@@ -272,15 +351,16 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                     incorrectEnglishWordsString += ",";
                 }
             }
-            // Get correct/incorrect/unknown answers. split incorrect word string into separate word strings
+            // Set correct/incorrect answers for Pepper to listen to
             PhraseSet correctWord = PhraseText(englishWord);
             PhraseSet incorrectEnglishWords = PhraseText(incorrectEnglishWordsString.split(","));
-            PhraseSet anyText = PhraseText(anyTextConstant);
 
-            // Listen to user and ask question until answer is correct
+            // Ask question and listen until correct answer received. 3 tries per question.
             while (!correctAnswer && numberTries < 3)
             {
                 sayText("What is " + blackfootWord + " in English?");
+                playMedia(testWordAudioFile);
+                pausePepper(1);
                 Listen listen = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords, anyText).build();
                 ListenResult listenResult = listen.run();
                 PhraseSet matchedPhraseSet = listenResult.getMatchedPhraseSet();
@@ -288,13 +368,15 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 // Check for correct answer
                 if (PhraseSetUtil.equals(matchedPhraseSet,correctWord))
                 {
-                    sayText("Yes! " + englishWord + " is " + blackfootWord + ". You got it!");
+                    sayText( "Yes, " + randomString(correctFeedbackConstant) + "! " + englishWord + " is " + blackfootWord + ".");
+                    playMedia(testWordAudioFile);
+                    pausePepper(1);
                     runAnimation(R.raw.affirmation_a002);
                     correctAnswer = true;
                 }
                 else if (PhraseSetUtil.equals(matchedPhraseSet, incorrectEnglishWords))
                 {
-                    sayText("Hmm, I don't think that is correct. Try again!");
+                    sayText("Hmm, " + randomString(incorrectFeedbackConstant) + ". Try again!");
                     runAnimation(R.raw.thinking_a001);
                     numberTries++;
                 }
@@ -308,6 +390,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 if (numberTries == 3)
                 {
                     sayText(blackfootWord + " is " + englishWord + " in English. Repeat after me: " + englishWord + ".");
+                    playMedia(testWordAudioFile);
                     runAnimation(R.raw.show_tablet_a002);
                     boolean continueBool = false;
                     while (!continueBool)
@@ -315,7 +398,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                         PhraseSet matchedCorrectionOption = ListenText(correctWord);
                         if (PhraseSetUtil.equals(matchedCorrectionOption,correctWord))
                         {
-                            sayText("You got it! Let's continue.");
+                            sayText(randomString(correctFeedbackConstant) + "! Let's continue.");
                             runAnimation(R.raw.affirmation_a011);
                             continueBool = true;
                         }
@@ -334,33 +417,12 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
-    /*private void playAudio(String audioString, MediaPlayer mediaPlayer)
-    {
-        Map<String, String> audioFiles = new HashMap<String, String>()
-        {{
-            put("greeting", R.raw.greeting);
-            put("fish", "mamii");
-            put("bread", "napayin");
-            put("water", "aohkii");
-        }};
-        try
-        {
-            //int audioId = getResources().getIdentifier(audioFile, "raw", getPackageName())
-            int audioId = getResources().getIdentifier(audioString, "raw",getPackageName());
-            mediaPlayer = MediaPlayer.create(R.raw.greeting);
-            mediaPlayer.start();
-        }
-        catch (Exception incorrectFileName)
-        {
-            Log.e(TAG, "File not found: " + incorrectFileName);
-            setContentView(R.layout.activity_main);
-        }
-    } */
 
     private void checkScore()
     {
         sayText("Your last score was " + totalUserScore + " out of " + testingWordsSize + ". Feel free to test your knowledge again!");
     }
+
     /*
     Pre: songName parameter should be the "exact" title of the song file
     Post: The audio file is played
@@ -400,7 +462,6 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
     // Doesn't work in emulator - might need Physical Pepper
     // Pepper approaches the human before engaging in a conversation
-
     private void approachHuman()
     {
         HumanAwareness humanAwareness = pepper_context.getHumanAwareness();
@@ -420,6 +481,27 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         approachHuman.async().run();
     }
 
+    // Param: String array filled with elements to randomize
+    // Post: Random string from String array
+    private String randomString(String[] stringArray)
+    {
+        Random random = new Random();
+        int index = random.nextInt(stringArray.length);
+        return stringArray[index];
+    }
+
+    // Param: String array
+    // Post: Shuffled String array, no modifications done to size or strings themselves
+    // Use for looping through random strings to randomize vocabulary in HashMap(learning,testing questions)
+    private String[] shuffleVocabulary(String[] stringArray)
+    {
+        // Create list of array, shuffle, then set array as randomized list
+        List<String> strList = Arrays.asList(stringArray);
+        Collections.shuffle(strList);
+
+        stringArray = strList.toArray(new String[strList.size()]);
+        return stringArray;
+    }
 
     /*
     Param: String text that Pepper should say
