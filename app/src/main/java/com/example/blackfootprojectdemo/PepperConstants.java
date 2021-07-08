@@ -52,17 +52,16 @@ public interface PepperConstants
         put("fish", "mamii");
         put("bread", "napayin");
         put("water", "aohkii");
+        put("apples", "aipasstaamiinammiksi");
+        put("oranges", "aotahkoinammiksi");
+        put("burger", "pikkiaaksin");
+        put("fries", "paataakistsi");
+        put("desert", "pisatsoyiikan");
+        put("tea", "siksikimmii");
+        put("coffee", "iitapsiksikimmii");
+        put("salt", "isttsiksipoko");
+        put("sugar", "naapiiniiwan");
+
     }};
-    String[] foodWordsList = new String[]{"egg", "fish", "bread", "water"};
-
-
-    // **HashMap of Test Function Words**
-    /*Map<String, String> testingWords = new HashMap<String, String>()
-    {{
-        // Add elements of all m/c
-        put("egg", "owa");
-        put("fish", "mamii");
-        put("bread", "napayin");
-        put("water", "aohkii");
-    }}; */
+    String[] foodWordsList = new String[]{"egg", "fish", "bread", "water", "apples", "oranges", "burger", "fries", "desert", "tea", "coffee", "salt", "sugar"};
 }
