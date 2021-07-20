@@ -12,11 +12,17 @@ public interface PepperConstants
 
     // **PhraseText Constants**
     String[] playTextConstant = new String[]{"play", "game", "first"};
+    String[] storyTextConstant = new String[]{"hear", "story", "hear story", "listen"};
     String[] learnTextConstant = new String[]{"learn", "flashcards", "teach", "second", "middle"};
     String[] testTextConstant = new String[]{"test", "exam", "third", "last", "final"};
     String[] scoreTextConstant = new String[]{"score", "grade", "number"};
     String[] exitTextConstant = new String[]{"no", "nope", "exit", "stop", "done", "break", "not anymore", "no more"};
     String[] anyTextConstant = new String[]{"anything", "you", "something", "matter", "any", "eh", "not sure", "don't know", "uh"};
+
+    // **Story Menu Constants**
+    String[] welcomeStoryConstant = new String[]{"welcome", "message", "first", "one"};
+    String[] smallNumberStoryConstant = new String[]{"small", "number", "counts", "counting", "hundred", "second", "two"};
+    String[] pauseStoryConstant = new String[]{"pause", "stop", "done", "finish", "end"};
 
     // **Learn Menu Constants**
     String[] learnGreetingConstant = new String[]{"greeting", "first"};

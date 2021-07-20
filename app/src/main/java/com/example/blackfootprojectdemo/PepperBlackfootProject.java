@@ -1,6 +1,7 @@
 package com.example.blackfootprojectdemo;
 
 import android.content.res.Resources;
+import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +31,7 @@ import com.aldebaran.qi.sdk.object.humanawareness.ApproachHuman;
 import com.aldebaran.qi.sdk.object.humanawareness.HumanAwareness;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -98,50 +100,106 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     }
 
     // Menu system outlining the various options
-    private void menuSystem()
-    {
+    private void menuSystem() {
         runAnimation(R.raw.show_tablet_a002);
-        sayText("Would you like to play a game, learn new words, check your score, test your knowledge, or stop?");
+        sayText("Would you like to play a game, hear a story, learn new words, test your knowledge, check your score or stop?");
 
         PhraseSet playText = PhraseText(playTextConstant);
+        PhraseSet storyText = PhraseText(storyTextConstant);
         PhraseSet learnText = PhraseText(learnTextConstant);
         PhraseSet testText = PhraseText(testTextConstant);
         PhraseSet scoreText = PhraseText(scoreTextConstant);
         PhraseSet exitTablet = PhraseText(exitTextConstant);
         PhraseSet anyText = PhraseText(anyTextConstant);
 
-        PhraseSet matchedMenuOption = ListenText(playText, learnText, testText, scoreText, anyText, exitTablet);
+        PhraseSet matchedMenuOption = ListenText(playText, storyText, learnText, testText, scoreText, anyText, exitTablet);
 
-        if (PhraseSetUtil.equals(matchedMenuOption,playText))
-        {
+        if (PhraseSetUtil.equals(matchedMenuOption, playText)) {
             sayText("Let's play!");
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,learnText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, storyText)) {
+            sayText("Let's hear a story!");
+            storyMenu();
+        } else if (PhraseSetUtil.equals(matchedMenuOption, learnText)) {
             sayText("Let's learn!");
             learnMenu();
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,testText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, testText)) {
             sayText("Let's do a test!");
             testMenu();
-        }
-        else if ((PhraseSetUtil.equals(matchedMenuOption,scoreText)))
-        {
+        } else if ((PhraseSetUtil.equals(matchedMenuOption, scoreText))) {
             checkScore();
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, anyText)) {
             sayText("Sure! I'm happy to choose.");
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,exitTablet))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, exitTablet)) {
             // Kitatama'sino: See you later.
             sayText("Kitatama'sino! Have a good day.");
 
             continue_looping = false;
             onRobotFocusGained(pepper_context);
         }
+    }
+
+    //Pepper's Story Function to hear stories in Blackfoot
+    private void storyMenu()
+    {
+        updateTabletImage("storysplashscreen");
+        sayText("Would you like to hear a welcome message or the small number story?");
+        runAnimation(R.raw.nicereaction_a002);
+
+        // Ask the user which story they want to hear
+        PhraseSet welcomeStoryCategory = PhraseText(welcomeStoryConstant);
+        PhraseSet smallNumberStoryCategory = PhraseText(smallNumberStoryConstant);
+        PhraseSet anyText = PhraseText(anyTextConstant);
+
+        PhraseSet matchedMenuOption = ListenText(welcomeStoryCategory, smallNumberStoryCategory, anyText);
+        String chosenStory = "";
+        int audioFileDuration = 0;
+
+        Map<String, String> currentHashSet = null;
+        if (PhraseSetUtil.equals(matchedMenuOption,welcomeStoryCategory))
+        {
+            chosenStory = "welcome_message";
+
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,smallNumberStoryCategory))
+        {
+            chosenStory = "small_number_counts";
+
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
+        {
+            sayText("Sure! I'm happy to choose.");
+
+            // Get a random integer and choose the appropriate category.
+            int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+            switch (randomNum)
+            {
+                case 1:
+                    chosenStory = "welcome_message";
+                    audioFileDuration = 14;
+                    break;
+                case 2:
+                    chosenStory = "small_number_counts";
+                    audioFileDuration = 197;
+                    break;
+            }
+        }
+        updateTabletImage("story");
+        sayText("Say done if you want to end the story.");
+        playMedia(chosenStory);
+        PhraseSet pauseStory = PhraseText(pauseStoryConstant);
+        PhraseSet matchedPauseOption = ListenText(pauseStory);
+
+
+        //pausePepper(audioFileDuration);
+        // add time delay based on length of audio file
+
+        if (PhraseSetUtil.equals(matchedPauseOption, pauseStory)) {
+            mediaPlayer.stop();
+            sayText("Returning to main menu.");
+            return;
+        }
+
+
     }
 
     // Pepper's Learn Function to teach words
