@@ -47,7 +47,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private static boolean continue_looping;
     private QiContext pepper_context = null;
     private double totalUserScore = 0;
+    private double foodScore = 0;
+    private double greetingScore = 0;
     private int totalWordsTested = 0;
+    private int totalFoodWordsTested = 0;
+    private int totalGreetingWordsTested = 0;
     private int testingWordsSize = 0;
 
     @Override
@@ -352,16 +356,21 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             sayText("Sure! I'm happy to choose.");
 
             // Get a random integer and choose the appropriate category.
+            // reset vocabulary word scores
             int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
             switch (randomNum)
             {
                 case 1:
                     currentHashSet = greetingWords;
                     wordList = greetingWordsList;
+                    greetingScore = 0;
+                    totalGreetingWordsTested = 0;
                     break;
                 case 2:
                     currentHashSet = foodWords;
                     wordList = foodWordsList;
+                    foodScore = 0;
+                    totalFoodWordsTested = 0;
                     break;
             }
         }
@@ -478,6 +487,18 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 totalUserScore += 1-(0.25 * numberTries);
             }
 
+            // Save scores
+            if (currentHashSet == greetingWords)
+            {
+                greetingScore = totalUserScore;
+                totalGreetingWordsTested = totalWordsTested;
+
+            } else if (currentHashSet == foodWords)
+            {
+                foodScore = totalUserScore;
+                totalFoodWordsTested = totalWordsTested;
+            }
+
             sayText("Would you like to get tested on another word?");
             PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
 
@@ -496,7 +517,35 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
     private void checkScore()
     {
-        sayText("Your last score was " + totalUserScore + " out of " + totalWordsTested + ". Feel free to test your knowledge again!");
+        updateTabletImage("vocabularysplashscreen");
+        sayText("Would you like to check greetings or food scores?");
+        // Ask the user which word categories they would like to learn first.
+        PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
+        PhraseSet foodCategory = PhraseText(learnFoodConstant);
+
+        PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory);
+
+        // set score/words tested to matching vocabulary; these reset to 0 when testmenu() is called and are reset.
+        if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
+        {
+            totalUserScore = greetingScore;
+            totalWordsTested = totalGreetingWordsTested;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
+        {
+            totalUserScore = foodScore;
+            totalWordsTested = totalFoodWordsTested;
+        }
+
+        // if scores are 0, not taken yet, can't display score
+        if (totalUserScore == 0 && totalWordsTested == 0)
+        {
+            sayText("Sorry, you haven't taken this test yet.");
+        } else
+            {
+            sayText("Your last score was " + totalUserScore + "/" + totalWordsTested +  ".0 or " + totalUserScore/totalWordsTested*100 + "%. Feel free to test your knowledge again!");
+        }
+
     }
 
     /*

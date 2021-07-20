@@ -25,7 +25,7 @@ public interface PepperConstants
     String[] pauseStoryConstant = new String[]{"pause", "stop", "done", "finish", "end"};
 
     // **Learn Menu Constants**
-    String[] learnGreetingConstant = new String[]{"greeting", "first"};
+    String[] learnGreetingConstant = new String[]{"greeting", "first", "greetings"};
     String[] learnFoodConstant = new String[]{"food", "second"};
     String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay"};
 
