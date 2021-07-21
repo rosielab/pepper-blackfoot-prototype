@@ -22,12 +22,14 @@ public interface PepperConstants
     // **Story Menu Constants**
     String[] welcomeStoryConstant = new String[]{"welcome", "message", "first", "one"};
     String[] smallNumberStoryConstant = new String[]{"small", "number", "counts", "counting", "hundred", "second", "two"};
-    String[] pauseStoryConstant = new String[]{"pause", "stop", "done", "finish", "end"};
+    String[] pauseStoryConstant = new String[]{"pause", "wait"};
+    String[] endStoryConstant = new String[]{"stop", "done", "finish", "end"};
+    String[] continueStoryConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue", "story", "proceed"};
 
     // **Learn Menu Constants**
     String[] learnGreetingConstant = new String[]{"greeting", "first", "greetings"};
     String[] learnFoodConstant = new String[]{"food", "second"};
-    String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay"};
+    String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue"};
 
     // **Miscellaneous Constants**
     String[] affirmationConstant = new String[]{"great", "awesome", "cool", "sweet", "nice"};

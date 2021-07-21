@@ -205,23 +205,50 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             }
         }
         updateTabletImage("story");
-        sayText("Say done if you want to end the story.");
-        playMedia(chosenStory);
+        sayText("Say pause to pause or stop to end story if you would like! Otherwise, enjoy the show.");
+
         PhraseSet pauseStory = PhraseText(pauseStoryConstant);
-        PhraseSet matchedPauseOption = ListenText(pauseStory);
+        PhraseSet endStory = PhraseText(endStoryConstant);
+        PhraseSet continueStory = PhraseText(continueStoryConstant);
 
+        boolean endStoryFunction = false;
+        boolean continueStoryFunction = true;
+        int audioPosition = 0;
+        playMedia(chosenStory);
+        while (!endStoryFunction)
+        {
 
-        //pausePepper(audioFileDuration);
-        // add time delay based on length of audio file
+            mediaPlayer.seekTo(audioPosition);
+            mediaPlayer.start();
 
-        if (PhraseSetUtil.equals(matchedPauseOption, pauseStory)) {
-            mediaPlayer.stop();
-            sayText("Returning to main menu.");
-            return;
-        }
+            PhraseSet matchedStoryOption = ListenText(pauseStory, endStory, continueStory);
 
+            // End story, return to main menu
+            if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
+                mediaPlayer.stop();
+                sayText("Returning to main menu.");
+                return;
+            }
+            // pause story, option to continue (re-loops) or exit/end story
+            // **Note: currently the if/else doesn't wait for the user very long, only a few seconds. if no response, story continues but can be repaused/stopped **
+            else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory)) {
+                mediaPlayer.pause();
+                audioPosition = mediaPlayer.getCurrentPosition();
+                sayText("I've paused the story for you. Would you like to continue or stop?");
+                if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
+                    mediaPlayer.stop();
+                    sayText("Returning to main menu.");
+                    return;
+                } else if (PhraseSetUtil.equals(matchedStoryOption, continueStory)) {
+                    mediaPlayer.seekTo(audioPosition);
+                    mediaPlayer.start();
+                }
 
-    }
+                // = mediaPlayer.getCurrentPosition();
+            }
+        } //endStoryFunction
+
+    } // end StoryMenu()
 
     // Pepper's Learn Function to teach words
     private void learnMenu()
