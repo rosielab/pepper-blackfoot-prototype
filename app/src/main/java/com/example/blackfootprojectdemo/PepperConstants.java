@@ -25,6 +25,7 @@ public interface PepperConstants
     String[] pauseStoryConstant = new String[]{"pause", "wait"};
     String[] endStoryConstant = new String[]{"stop", "done", "finish", "end"};
     String[] continueStoryConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue", "story", "proceed"};
+    String[] restartStoryConstant = new String[]{"restart", "reset", "beginning", "front"};
 
     // **Learn Menu Constants**
     String[] learnGreetingConstant = new String[]{"greeting", "first", "greetings"};
@@ -35,6 +36,8 @@ public interface PepperConstants
     String[] affirmationConstant = new String[]{"great", "awesome", "cool", "sweet", "nice"};
     String[] correctFeedbackConstant = new String[]{"good job", "nice work", "right on", "keep it up", "way to go", "you nailed it", "I'm impressed", "you got it"};
     String[] incorrectFeedbackConstant = new String[]{"almost got it", "so close", "not quite", "good try", "I don't think that's correct"};
+    String[] yesConstant = new String[]{"yes", "okay", "sure"};
+    String[] noConstant = new String[]{"no", "nah", "nope"};
 
 
     // **HashMap of Greeting Words**

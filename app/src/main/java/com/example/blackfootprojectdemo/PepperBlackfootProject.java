@@ -160,94 +160,123 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     }
 
     //Pepper's Story Function to hear stories in Blackfoot
-    private void storyMenu()
-    {
-        updateTabletImage("storysplashscreen");
-        sayText("Would you like to hear a welcome message or the small number story?");
-        runAnimation(R.raw.nicereaction_a002);
+    private void storyMenu() {
+        boolean chooseStory = false;
+        while (!chooseStory) {
 
-        // Ask the user which story they want to hear
-        PhraseSet welcomeStoryCategory = PhraseText(welcomeStoryConstant);
-        PhraseSet smallNumberStoryCategory = PhraseText(smallNumberStoryConstant);
-        PhraseSet anyText = PhraseText(anyTextConstant);
+            updateTabletImage("storysplashscreen");
 
-        PhraseSet matchedMenuOption = ListenText(welcomeStoryCategory, smallNumberStoryCategory, anyText);
-        String chosenStory = "";
-        int audioFileDuration = 0;
+            sayText("Would you like to hear a welcome message or the small number story?");
+            runAnimation(R.raw.nicereaction_a002);
 
-        Map<String, String> currentHashSet = null;
-        if (PhraseSetUtil.equals(matchedMenuOption,welcomeStoryCategory))
-        {
-            chosenStory = "welcome_message";
+            // Ask the user which story they want to hear
+            PhraseSet welcomeStoryCategory = PhraseText(welcomeStoryConstant);
+            PhraseSet smallNumberStoryCategory = PhraseText(smallNumberStoryConstant);
+            PhraseSet anyText = PhraseText(anyTextConstant);
+            PhraseSet yesText = PhraseText(yesConstant);
+            PhraseSet noText = PhraseText(noConstant);
 
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,smallNumberStoryCategory))
-        {
-            chosenStory = "small_number_counts";
+            PhraseSet matchedMenuOption = ListenText(welcomeStoryCategory, smallNumberStoryCategory, anyText);
+            String chosenStory = "";
+            int audioFileDuration = 0;
 
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
-        {
-            sayText("Sure! I'm happy to choose.");
+            Map<String, String> currentHashSet = null;
+            if (PhraseSetUtil.equals(matchedMenuOption, welcomeStoryCategory)) {
+                chosenStory = "welcome_message";
 
-            // Get a random integer and choose the appropriate category.
-            int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
-            switch (randomNum)
-            {
-                case 1:
-                    chosenStory = "welcome_message";
-                    audioFileDuration = 14;
-                    break;
-                case 2:
-                    chosenStory = "small_number_counts";
-                    audioFileDuration = 197;
-                    break;
+            } else if (PhraseSetUtil.equals(matchedMenuOption, smallNumberStoryCategory)) {
+                chosenStory = "small_number_counts";
+
+            } else if (PhraseSetUtil.equals(matchedMenuOption, anyText)) {
+                sayText("Sure! I'm happy to choose.");
+
+                // Get a random integer and choose the appropriate category.
+                int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+                switch (randomNum) {
+                    case 1:
+                        chosenStory = "welcome_message";
+                        audioFileDuration = 14;
+                        break;
+                    case 2:
+                        chosenStory = "small_number_counts";
+                        audioFileDuration = 197;
+                        break;
+                }
             }
-        }
-        updateTabletImage("story");
-        sayText("Say pause to pause or stop to end story if you would like! Otherwise, enjoy the show.");
+            updateTabletImage("story");
+            sayText("You can pause, stop or restart the story at any time, just tell me! Otherwise, enjoy the show.");
 
-        PhraseSet pauseStory = PhraseText(pauseStoryConstant);
-        PhraseSet endStory = PhraseText(endStoryConstant);
-        PhraseSet continueStory = PhraseText(continueStoryConstant);
+            PhraseSet pauseStory = PhraseText(pauseStoryConstant);
+            PhraseSet endStory = PhraseText(endStoryConstant);
+            PhraseSet continueStory = PhraseText(continueStoryConstant);
+            PhraseSet restartStory = PhraseText(restartStoryConstant);
 
-        boolean endStoryFunction = false;
-        boolean continueStoryFunction = true;
-        int audioPosition = 0;
-        playMedia(chosenStory);
-        while (!endStoryFunction)
-        {
+            boolean endCurrentStory = false;
+            int audioPosition = 0;
+            playMedia(chosenStory);
+            while (!endCurrentStory) {
 
-            mediaPlayer.seekTo(audioPosition);
-            mediaPlayer.start();
+                mediaPlayer.seekTo(audioPosition);
+                mediaPlayer.start();
 
-            PhraseSet matchedStoryOption = ListenText(pauseStory, endStory, continueStory);
+                PhraseSet matchedStoryOption = ListenText(pauseStory, endStory, continueStory, restartStory);
 
-            // End story, return to main menu
-            if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
-                mediaPlayer.stop();
-                sayText("Returning to main menu.");
-                return;
-            }
-            // pause story, option to continue (re-loops) or exit/end story
-            // **Note: currently the if/else doesn't wait for the user very long, only a few seconds. if no response, story continues but can be repaused/stopped **
-            else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory)) {
-                mediaPlayer.pause();
-                audioPosition = mediaPlayer.getCurrentPosition();
-                sayText("I've paused the story for you. Would you like to continue or stop?");
-                if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
-                    mediaPlayer.stop();
-                    sayText("Returning to main menu.");
-                    return;
-                } else if (PhraseSetUtil.equals(matchedStoryOption, continueStory)) {
+                // End story, return to main menu
+                // reset story; set audio position back to 0 and begin again.
+                if (PhraseSetUtil.equals(matchedStoryOption, restartStory)) //**this works, can restart from main while loop
+                {
+                    mediaPlayer.pause();
+                    sayText("Okay, starting from the top!");
+                    audioPosition = 0;
                     mediaPlayer.seekTo(audioPosition);
                     mediaPlayer.start();
                 }
+                // stop story: switch stories or return to main menu
+                else if (PhraseSetUtil.equals(matchedStoryOption, endStory))
+                {
+                    // stop story
+                    mediaPlayer.stop();
+                    endCurrentStory = true;
+                    sayText("Would you like to hear another story?");
+                    PhraseSet matchedYesNoOption = ListenText(yesText, noText);
 
-                // = mediaPlayer.getCurrentPosition();
-            }
-        } //endStoryFunction
+                    if (PhraseSetUtil.equals(matchedYesNoOption, yesText))
+                    {
+                        sayText("You got it!");
+                    }
+                    else if (PhraseSetUtil.equals(matchedYesNoOption, noText))
+                    {
+                        sayText("Not a problem, returning to main menu.");
+                        chooseStory = true; // stop story selection
+                        //return;
+                    }
 
+                }
+                // pause story, option to continue (re-loops) or exit/end story
+                // Note: if/else statements currently don't work, have to wait until story starts again to choose these options.
+                // pauses story for a few seconds, then picks up at same spot.
+                else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory)) {
+                    mediaPlayer.pause();
+                    audioPosition = mediaPlayer.getCurrentPosition();
+                    sayText("I've paused the story for you. Would you like to continue, stop or reset?");
+                    if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
+                        mediaPlayer.stop();
+                        sayText("Returning to main menu.");
+                        return;
+                    } else if (PhraseSetUtil.equals(matchedStoryOption, continueStory)) {
+                        mediaPlayer.seekTo(audioPosition);
+                        mediaPlayer.start();
+                    } else if (PhraseSetUtil.equals(matchedStoryOption, restartStory)) {
+                        mediaPlayer.pause();
+                        sayText("Okay, starting from the top!");
+                        audioPosition = 0;
+                        mediaPlayer.seekTo(audioPosition);
+                        mediaPlayer.start();
+                    }
+                }
+
+            } //end of story
+        }
     } // end StoryMenu()
 
     // Pepper's Learn Function to teach words
