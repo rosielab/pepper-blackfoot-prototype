@@ -12,21 +12,32 @@ public interface PepperConstants
 
     // **PhraseText Constants**
     String[] playTextConstant = new String[]{"play", "game", "first"};
+    String[] storyTextConstant = new String[]{"hear", "story", "hear story", "listen"};
     String[] learnTextConstant = new String[]{"learn", "flashcards", "teach", "second", "middle"};
     String[] testTextConstant = new String[]{"test", "exam", "third", "last", "final"};
     String[] scoreTextConstant = new String[]{"score", "grade", "number"};
     String[] exitTextConstant = new String[]{"no", "nope", "exit", "stop", "done", "break", "not anymore", "no more"};
     String[] anyTextConstant = new String[]{"anything", "you", "something", "matter", "any", "eh", "not sure", "don't know", "uh"};
 
+    // **Story Menu Constants**
+    String[] welcomeStoryConstant = new String[]{"welcome", "message", "first", "one"};
+    String[] smallNumberStoryConstant = new String[]{"small", "number", "counts", "counting", "hundred", "second", "two"};
+    String[] pauseStoryConstant = new String[]{"pause", "wait"};
+    String[] endStoryConstant = new String[]{"stop", "done", "finish", "end"};
+    String[] continueStoryConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue", "story", "proceed"};
+    String[] restartStoryConstant = new String[]{"restart", "reset", "beginning", "front"};
+
     // **Learn Menu Constants**
-    String[] learnGreetingConstant = new String[]{"greeting", "first"};
+    String[] learnGreetingConstant = new String[]{"greeting", "first", "greetings"};
     String[] learnFoodConstant = new String[]{"food", "second"};
-    String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay"};
+    String[] continueConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue"};
 
     // **Miscellaneous Constants**
     String[] affirmationConstant = new String[]{"great", "awesome", "cool", "sweet", "nice"};
     String[] correctFeedbackConstant = new String[]{"good job", "nice work", "right on", "keep it up", "way to go", "you nailed it", "I'm impressed", "you got it"};
     String[] incorrectFeedbackConstant = new String[]{"almost got it", "so close", "not quite", "good try", "I don't think that's correct"};
+    String[] yesConstant = new String[]{"yes", "okay", "sure"};
+    String[] noConstant = new String[]{"no", "nah", "nope"};
 
 
     // **HashMap of Greeting Words**

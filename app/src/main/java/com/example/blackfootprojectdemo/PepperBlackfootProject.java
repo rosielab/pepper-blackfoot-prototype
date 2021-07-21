@@ -1,6 +1,7 @@
 package com.example.blackfootprojectdemo;
 
 import android.content.res.Resources;
+import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,12 +35,14 @@ import com.aldebaran.qi.sdk.object.humanawareness.HumanAwareness;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
 import java.util.ArrayList;
+//import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.lang.Math;
 
 
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks, PepperConstants
@@ -49,7 +52,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private static boolean continue_looping;
     private QiContext pepper_context = null;
     private double totalUserScore = 0;
+    private double foodScore = 0;
+    private double greetingScore = 0;
     private int totalWordsTested = 0;
+    private int totalFoodWordsTested = 0;
+    private int totalGreetingWordsTested = 0;
     private int testingWordsSize = 0;
     private int correctTestingButton;
     private boolean correctAnswerChosen = false;
@@ -114,44 +121,36 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     }
 
     // Menu system outlining the various options
-    private void menuSystem()
-    {
+    private void menuSystem() {
         runAnimation(R.raw.show_tablet_a002);
-        sayText("Would you like to play a game, learn new words, check your score, test your knowledge, or stop?");
+        sayText("Would you like to play a game, hear a story, learn new words, test your knowledge, check your score or stop?");
 
         PhraseSet playText = PhraseText(playTextConstant);
+        PhraseSet storyText = PhraseText(storyTextConstant);
         PhraseSet learnText = PhraseText(learnTextConstant);
         PhraseSet testText = PhraseText(testTextConstant);
         PhraseSet scoreText = PhraseText(scoreTextConstant);
         PhraseSet exitTablet = PhraseText(exitTextConstant);
         PhraseSet anyText = PhraseText(anyTextConstant);
 
-        PhraseSet matchedMenuOption = ListenText(playText, learnText, testText, scoreText, anyText, exitTablet);
+        PhraseSet matchedMenuOption = ListenText(playText, storyText, learnText, testText, scoreText, anyText, exitTablet);
 
-        if (PhraseSetUtil.equals(matchedMenuOption,playText))
-        {
+        if (PhraseSetUtil.equals(matchedMenuOption, playText)) {
             sayText("Let's play!");
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,learnText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, storyText)) {
+            sayText("Let's hear a story!");
+            storyMenu();
+        } else if (PhraseSetUtil.equals(matchedMenuOption, learnText)) {
             sayText("Let's learn!");
             learnMenu();
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,testText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, testText)) {
             sayText("Let's do a test!");
             testMenu();
-        }
-        else if ((PhraseSetUtil.equals(matchedMenuOption,scoreText)))
-        {
+        } else if ((PhraseSetUtil.equals(matchedMenuOption, scoreText))) {
             checkScore();
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,anyText))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, anyText)) {
             sayText("Sure! I'm happy to choose.");
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,exitTablet))
-        {
+        } else if (PhraseSetUtil.equals(matchedMenuOption, exitTablet)) {
             // Kitatama'sino: See you later.
             sayText("Kitatama'sino! Have a good day.");
 
@@ -159,6 +158,126 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             onRobotFocusGained(pepper_context);
         }
     }
+
+    //Pepper's Story Function to hear stories in Blackfoot
+    private void storyMenu() {
+        boolean chooseStory = false;
+        while (!chooseStory) {
+
+            updateTabletImage("storysplashscreen");
+
+            sayText("Would you like to hear a welcome message or the small number story?");
+            runAnimation(R.raw.nicereaction_a002);
+
+            // Ask the user which story they want to hear
+            PhraseSet welcomeStoryCategory = PhraseText(welcomeStoryConstant);
+            PhraseSet smallNumberStoryCategory = PhraseText(smallNumberStoryConstant);
+            PhraseSet anyText = PhraseText(anyTextConstant);
+            PhraseSet yesText = PhraseText(yesConstant);
+            PhraseSet noText = PhraseText(noConstant);
+
+            PhraseSet matchedMenuOption = ListenText(welcomeStoryCategory, smallNumberStoryCategory, anyText);
+            String chosenStory = "";
+            int audioFileDuration = 0;
+
+            Map<String, String> currentHashSet = null;
+            if (PhraseSetUtil.equals(matchedMenuOption, welcomeStoryCategory)) {
+                chosenStory = "welcome_message";
+
+            } else if (PhraseSetUtil.equals(matchedMenuOption, smallNumberStoryCategory)) {
+                chosenStory = "small_number_counts";
+
+            } else if (PhraseSetUtil.equals(matchedMenuOption, anyText)) {
+                sayText("Sure! I'm happy to choose.");
+
+                // Get a random integer and choose the appropriate category.
+                int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+                switch (randomNum) {
+                    case 1:
+                        chosenStory = "welcome_message";
+                        audioFileDuration = 14;
+                        break;
+                    case 2:
+                        chosenStory = "small_number_counts";
+                        audioFileDuration = 197;
+                        break;
+                }
+            }
+            updateTabletImage("story");
+            sayText("You can pause, stop or restart the story at any time, just tell me! Otherwise, enjoy the show.");
+
+            PhraseSet pauseStory = PhraseText(pauseStoryConstant);
+            PhraseSet endStory = PhraseText(endStoryConstant);
+            PhraseSet continueStory = PhraseText(continueStoryConstant);
+            PhraseSet restartStory = PhraseText(restartStoryConstant);
+
+            boolean endCurrentStory = false;
+            int audioPosition = 0;
+            playMedia(chosenStory);
+            while (!endCurrentStory) {
+
+                mediaPlayer.seekTo(audioPosition);
+                mediaPlayer.start();
+
+                PhraseSet matchedStoryOption = ListenText(pauseStory, endStory, continueStory, restartStory);
+
+                // End story, return to main menu
+                // reset story; set audio position back to 0 and begin again.
+                if (PhraseSetUtil.equals(matchedStoryOption, restartStory)) //**this works, can restart from main while loop
+                {
+                    mediaPlayer.pause();
+                    sayText("Okay, starting from the top!");
+                    audioPosition = 0;
+                    mediaPlayer.seekTo(audioPosition);
+                    mediaPlayer.start();
+                }
+                // stop story: switch stories or return to main menu
+                else if (PhraseSetUtil.equals(matchedStoryOption, endStory))
+                {
+                    // stop story
+                    mediaPlayer.stop();
+                    endCurrentStory = true;
+                    sayText("Would you like to hear another story?");
+                    PhraseSet matchedYesNoOption = ListenText(yesText, noText);
+
+                    if (PhraseSetUtil.equals(matchedYesNoOption, yesText))
+                    {
+                        sayText("You got it!");
+                    }
+                    else if (PhraseSetUtil.equals(matchedYesNoOption, noText))
+                    {
+                        sayText("Not a problem, returning to main menu.");
+                        chooseStory = true; // stop story selection
+                        //return;
+                    }
+
+                }
+                // pause story, option to continue (re-loops) or exit/end story
+                // Note: if/else statements currently don't work, have to wait until story starts again to choose these options.
+                // pauses story for a few seconds, then picks up at same spot.
+                else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory)) {
+                    mediaPlayer.pause();
+                    audioPosition = mediaPlayer.getCurrentPosition();
+                    sayText("I've paused the story for you. Would you like to continue, stop or reset?");
+                    if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
+                        mediaPlayer.stop();
+                        sayText("Returning to main menu.");
+                        return;
+                    } else if (PhraseSetUtil.equals(matchedStoryOption, continueStory)) {
+                        mediaPlayer.seekTo(audioPosition);
+                        mediaPlayer.start();
+                    } else if (PhraseSetUtil.equals(matchedStoryOption, restartStory)) {
+                        mediaPlayer.pause();
+                        sayText("Okay, starting from the top!");
+                        audioPosition = 0;
+                        mediaPlayer.seekTo(audioPosition);
+                        mediaPlayer.start();
+                    }
+                }
+
+            } //end of story
+        }
+    } // end StoryMenu()
 
     // Pepper's Learn Function to teach words
     private void learnMenu()
@@ -310,16 +429,21 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             sayText("Sure! I'm happy to choose.");
 
             // Get a random integer and choose the appropriate category.
+            // reset vocabulary word scores
             int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
             switch (randomNum)
             {
                 case 1:
                     currentHashSet = greetingWords;
                     wordList = greetingWordsList;
+                    greetingScore = 0;
+                    totalGreetingWordsTested = 0;
                     break;
                 case 2:
                     currentHashSet = foodWords;
                     wordList = foodWordsList;
+                    foodScore = 0;
+                    totalFoodWordsTested = 0;
                     break;
             }
         }
@@ -546,6 +670,18 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 totalUserScore += 1-(0.25 * numberTries);
             }
 
+            // Save scores
+            if (currentHashSet == greetingWords)
+            {
+                greetingScore = totalUserScore;
+                totalGreetingWordsTested = totalWordsTested;
+
+            } else if (currentHashSet == foodWords)
+            {
+                foodScore = totalUserScore;
+                totalFoodWordsTested = totalWordsTested;
+            }
+
             sayText("Would you like to get tested on another word?");
             PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
 
@@ -557,14 +693,64 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
         } // end of all questions, return to main menu
 
-        sayText("Your final score is " + totalUserScore + "/" + totalWordsTested +  ".0 or " + totalUserScore/totalWordsTested*100 + "%. Good job!");
+        sayText("Your final score is " + totalUserScore + "/" + totalWordsTested +  ".0 or " + Math.round(totalUserScore/totalWordsTested*100) + "%. Good job!");
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
 
     private void checkScore()
     {
-        sayText("Your last score was " + totalUserScore + " out of " + totalWordsTested + ". Feel free to test your knowledge again!");
+        updateTabletImage("vocabularysplashscreen");
+        boolean returnToMainMenu = false;
+        while (!returnToMainMenu)
+        {
+            sayText("Would you like to check greetings or food scores?");
+            // Ask the user which word categories they would like to learn first.
+            PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
+            PhraseSet foodCategory = PhraseText(learnFoodConstant);
+
+            PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory);
+
+            // set score/words tested to matching vocabulary; these reset to 0 when testmenu() is called and are reset.
+            if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
+            {
+                totalUserScore = greetingScore;
+                totalWordsTested = totalGreetingWordsTested;
+            }
+            else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
+            {
+                totalUserScore = foodScore;
+                totalWordsTested = totalFoodWordsTested;
+            }
+
+            // if scores are 0, not taken yet, can't display score
+            if (totalUserScore == 0 && totalWordsTested == 0)
+            {
+                sayText("Sorry, you haven't taken this test yet.");
+            } else
+            {
+                sayText("Your last score was " + totalUserScore + "/" + totalWordsTested +  ".0 or " + Math.round(totalUserScore/totalWordsTested*100) + "%. Feel free to test your knowledge again!");
+            }
+
+            // Ask to check another score
+            sayText("Would you like to check another score?");
+            PhraseSet continueScore = PhraseText(continueConstant);
+            PhraseSet exitScore = PhraseText(exitTextConstant);
+
+            PhraseSet matchedLeaveScoreOption = ListenText(continueScore, exitScore);
+
+
+            // Listen for vocabulary test user would like, set matching vocabulary set
+            if (PhraseSetUtil.equals(matchedLeaveScoreOption,continueScore))
+            {
+                sayText("Okay!");
+            }
+            else if (PhraseSetUtil.equals(matchedLeaveScoreOption,exitScore))
+            {
+                sayText("Taking you back to the main menu.");
+                returnToMainMenu = true;
+            }
+        }
     }
 
     /*
