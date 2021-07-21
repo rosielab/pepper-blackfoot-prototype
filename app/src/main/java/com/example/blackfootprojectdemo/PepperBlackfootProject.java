@@ -5,6 +5,9 @@ import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.RawRes;
 
@@ -31,13 +34,15 @@ import com.aldebaran.qi.sdk.object.humanawareness.ApproachHuman;
 import com.aldebaran.qi.sdk.object.humanawareness.HumanAwareness;
 import com.aldebaran.qi.sdk.util.PhraseSetUtil;
 
-import java.io.File;
+import java.util.ArrayList;
+//import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.lang.Math;
 
 
 public class PepperBlackfootProject extends RobotActivity implements RobotLifecycleCallbacks, PepperConstants
@@ -53,6 +58,10 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private int totalFoodWordsTested = 0;
     private int totalGreetingWordsTested = 0;
     private int testingWordsSize = 0;
+    private int correctTestingButton;
+    private boolean correctAnswerChosen = false;
+    private boolean incorrectAnswerChosen = false;
+    private ArrayList<Integer> incorrectTestingButtons = new ArrayList<Integer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,8 +106,16 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         sayText("I'm Pepper! How are you doing today?");
         PhraseSet feelingWell = PhraseText(feelingWellConstant);
         PhraseSet feelingBad = PhraseText(feelingBadConstant);
+        PhraseSet matchedFeelings = ListenText(feelingWell, feelingBad);
 
-        ListenText(feelingWell, feelingBad);
+        if (PhraseSetUtil.equals(matchedFeelings,feelingWell))
+        {
+            sayText("Oh wow, that's great to hear! I'm glad you're doing well.");
+        }
+        else
+        {
+            sayText("Oh, well you know what cheers me up? The feeling you get after learning something new!");
+        }
         runAnimation(R.raw.affirmation_a011);
         sayText("Let's learn some Blackfoot together!");
     }
@@ -403,15 +420,13 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 }
             }
 
-            // Reset number of tries and variable controlling when to move to next question
-            boolean correctAnswer = false;
+            // Reset number of tries
             double numberTries = 0;
 
             // Set vocab question's corresponding image and Blackfoot audio file
             assert englishWord != null;
             String wordWithoutSpaces = englishWord.replaceAll("[\\s .?']","");
             String testWordAudioFile = "learn_" + wordWithoutSpaces;
-            updateTabletImage(wordWithoutSpaces + "testing");
 
             // Get/set incorrect answers from HashMap
             String incorrectEnglishWordsString = "";
@@ -428,30 +443,124 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             }
             // Set correct/incorrect answers for Pepper to listen to
             PhraseSet correctWord = PhraseText(englishWord);
-            PhraseSet incorrectEnglishWords = PhraseText(incorrectEnglishWordsString.split(","));
+            String[] incorrectEnglishWordsList = incorrectEnglishWordsString.split(",");
+            PhraseSet incorrectEnglishWords = PhraseText(incorrectEnglishWordsList);
+
+            String finalBlackfootWord = blackfootWord;
+            String finalEnglishWord = englishWord;
+
+            // Since we're changing the tablet image elements, we need to run on the main thread.
+            // Assigns each tablet button on the template with a random option for the current word
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+
+                    updateTabletImage("initialtesttemplate");
+
+                    // Update the test template with the corresponding Blackfoot word and its English options
+                    TextView blackfootTestWord = (TextView)findViewById(R.id.blackfoottestword);
+                    // Set the slide text title to the Blackfoot work (first letter capitalized)
+                    blackfootTestWord.setText(finalBlackfootWord.substring(0, 1).toUpperCase() + finalBlackfootWord.substring(1));
+
+                    // User can choose between EnglishTestWord 1 and EnglishTestWord 4 (4 options)
+                    int lowOption = 1;
+                    int highOption = 4;
+
+                    ArrayList<Integer> chosenButtonOptions = new ArrayList<Integer>();
+                    ArrayList<String> availableEnglishButtonWords = new ArrayList<String>(Arrays.asList(incorrectEnglishWordsList));
+                    availableEnglishButtonWords.removeAll(Arrays.asList("", " ", null));
+
+                    // Clear the past incorrect Button IDs
+                    incorrectTestingButtons.clear();
+
+                    // Get a button to store the correct English answer
+                    int correctRandomOption = ThreadLocalRandom.current().nextInt(lowOption, highOption+1);
+                    String correctButtonText = "englishtestword" + correctRandomOption;
+                    int correctButtonID = getResources().getIdentifier(correctButtonText, "id", getPackageName());
+                    correctTestingButton = correctButtonID;
+
+                    // Set the correct button's text to the answer
+                    Button correctButton = findViewById(correctButtonID);
+                    correctButton.setText(finalEnglishWord);
+                    chosenButtonOptions.add(correctRandomOption);
+
+                    // Remove the correct text from the available options
+                    availableEnglishButtonWords.remove(finalEnglishWord);
+
+                    // Iterate through the rest of the buttons
+                    Button[] initialTestButtons = new Button[highOption];
+                    for (int i = 1; i < highOption; i++)
+                    {
+                        // Get another button that has not already been chosen/modified
+                        Collections.sort(chosenButtonOptions);
+                        int incorrectRandomOption = getRandomNumberWithExclusion(lowOption, highOption, chosenButtonOptions);
+                        String incorrectOptionButton = "englishtestword" + incorrectRandomOption;
+
+                        // Get the button's ID
+                        int incorrectButtonID = getResources().getIdentifier(incorrectOptionButton, "id", getPackageName());
+
+                        // Add the button ID to exclusion list so that we don't change the button again.
+                        chosenButtonOptions.add(incorrectRandomOption);
+                        Button currentButton = findViewById(incorrectButtonID);
+
+                        // Add the incorrect Button IDs into an array to "hide" them after if the user has incorrect responses
+                        incorrectTestingButtons.add(incorrectButtonID);
+
+                        // Assign a random incorrect English word (not previously used) to the button
+                        int randomEnglishWordIndex = ThreadLocalRandom.current().nextInt(0, availableEnglishButtonWords.size());
+
+                        String chosenEnglishWord  = availableEnglishButtonWords.get(randomEnglishWordIndex);
+                        currentButton.setText(chosenEnglishWord);
+
+                        // Remove the correct text from the available options
+                        availableEnglishButtonWords.remove(chosenEnglishWord);
+                    }
+
+                }
+            });
 
             // Ask question and listen until correct answer received. 3 tries per question.
-            while (!correctAnswer && numberTries < 3)
+            while (numberTries < 3)
             {
                 sayText("What is " + blackfootWord + " in English?");
                 playMedia(testWordAudioFile);
                 pausePepper(1);
-                Listen listen = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords, anyText).build();
-                ListenResult listenResult = listen.run();
+
+                // Currently not working (onButtonClick instead of just Pepper listening as well)
+                /*
+                Button correctButton = findViewById(correctTestingButton);
+                correctButton.setOnClickListener(new View.OnClickListener()
+                {
+
+                    @Override
+                    public void onClick(View view)
+                    {
+                        correctAnswerChosen = true;
+                    }
+                });
+                */
+
+                Listen listenForCorrectAnswer = ListenBuilder.with(pepper_context).withPhraseSets(correctWord, incorrectEnglishWords, anyText).build();
+                ListenResult listenResult = listenForCorrectAnswer.run();
                 PhraseSet matchedPhraseSet = listenResult.getMatchedPhraseSet();
 
                 // Check for correct answer
-                if (PhraseSetUtil.equals(matchedPhraseSet,correctWord))
+                if (PhraseSetUtil.equals(matchedPhraseSet,correctWord) || correctAnswerChosen)
                 {
                     sayText( "Yes, " + randomString(correctFeedbackConstant) + "! " + englishWord + " is " + blackfootWord + ".");
                     playMedia(testWordAudioFile);
                     pausePepper(1);
                     runAnimation(R.raw.affirmation_a002);
-                    correctAnswer = true;
+                    break;
                 }
                 else if (PhraseSetUtil.equals(matchedPhraseSet, incorrectEnglishWords))
                 {
-                    sayText("Hmm, " + randomString(incorrectFeedbackConstant) + ". Try again!");
+                    sayText("Hmm, " + randomString(incorrectFeedbackConstant));
+                    if (numberTries < 2)
+                    {
+                        sayText("Please try again!");
+                    }
                     runAnimation(R.raw.thinking_a001);
                     numberTries++;
                 }
@@ -461,25 +570,43 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                     numberTries = 3;
                 }
 
+                // If the user has reached 2 tries, hide 2 of the incorrect buttons
+                if (numberTries == 2)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        // Get a button ID with the incorrect answer
+                        int randomHiddenButtonIndex = ThreadLocalRandom.current().nextInt(0, incorrectTestingButtons.size());
+                        int incorrectButtonID = incorrectTestingButtons.get(randomHiddenButtonIndex);
+                        incorrectTestingButtons.remove(randomHiddenButtonIndex);
+
+                        runOnUiThread(new Runnable()
+                        {
+                            @Override
+                            public void run()
+                            {
+                                // Make the button invisible
+                                Button hiddenButton = findViewById(incorrectButtonID);
+                                hiddenButton.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                    }
+                }
                 // Too many wrong tries, review answer
                 if (numberTries == 3)
                 {
                     sayText(blackfootWord + " is " + englishWord + " in English. Repeat after me: " + englishWord + ".");
                     playMedia(testWordAudioFile);
                     runAnimation(R.raw.show_tablet_a002);
-                    boolean continueBool = false;
-                    while (!continueBool)
+
+                    PhraseSet matchedCorrectionOption = ListenText(correctWord);
+                    if (PhraseSetUtil.equals(matchedCorrectionOption,correctWord))
                     {
-                        PhraseSet matchedCorrectionOption = ListenText(correctWord);
-                        if (PhraseSetUtil.equals(matchedCorrectionOption,correctWord))
-                        {
-                            sayText(randomString(correctFeedbackConstant) + "!");
-                            runAnimation(R.raw.affirmation_a011);
-                            continueBool = true;
-                        }
+                        sayText(randomString(correctFeedbackConstant) + "!");
+                        runAnimation(R.raw.affirmation_a011);
                     }
                 }
-            } // end while loop: got correct answer
+            }
 
             //update score if number_tries is high enough: 2 tries or less needed. 3 or more tries allocates 0 points
             if (numberTries <= 2)
@@ -510,7 +637,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
         } // end of all questions, return to main menu
 
-        sayText("Your final score is " + totalUserScore + "/" + totalWordsTested +  ".0 or " + totalUserScore/totalWordsTested*100 + "%. Good job!");
+        sayText("Your final score is " + totalUserScore + "/" + totalWordsTested +  ".0 or " + Math.round(totalUserScore/totalWordsTested*100) + "%. Good job!");
         runAnimation(R.raw.affirmation_a011);
     } // end testMenu()
 
@@ -518,34 +645,56 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private void checkScore()
     {
         updateTabletImage("vocabularysplashscreen");
-        sayText("Would you like to check greetings or food scores?");
-        // Ask the user which word categories they would like to learn first.
-        PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
-        PhraseSet foodCategory = PhraseText(learnFoodConstant);
-
-        PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory);
-
-        // set score/words tested to matching vocabulary; these reset to 0 when testmenu() is called and are reset.
-        if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
+        boolean returnToMainMenu = false;
+        while (!returnToMainMenu)
         {
-            totalUserScore = greetingScore;
-            totalWordsTested = totalGreetingWordsTested;
-        }
-        else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
-        {
-            totalUserScore = foodScore;
-            totalWordsTested = totalFoodWordsTested;
-        }
+            sayText("Would you like to check greetings or food scores?");
+            // Ask the user which word categories they would like to learn first.
+            PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
+            PhraseSet foodCategory = PhraseText(learnFoodConstant);
 
-        // if scores are 0, not taken yet, can't display score
-        if (totalUserScore == 0 && totalWordsTested == 0)
-        {
-            sayText("Sorry, you haven't taken this test yet.");
-        } else
+            PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory);
+
+            // set score/words tested to matching vocabulary; these reset to 0 when testmenu() is called and are reset.
+            if (PhraseSetUtil.equals(matchedMenuOption,greetingCategory))
             {
-            sayText("Your last score was " + totalUserScore + "/" + totalWordsTested +  ".0 or " + totalUserScore/totalWordsTested*100 + "%. Feel free to test your knowledge again!");
-        }
+                totalUserScore = greetingScore;
+                totalWordsTested = totalGreetingWordsTested;
+            }
+            else if (PhraseSetUtil.equals(matchedMenuOption,foodCategory))
+            {
+                totalUserScore = foodScore;
+                totalWordsTested = totalFoodWordsTested;
+            }
 
+            // if scores are 0, not taken yet, can't display score
+            if (totalUserScore == 0 && totalWordsTested == 0)
+            {
+                sayText("Sorry, you haven't taken this test yet.");
+            } else
+            {
+                sayText("Your last score was " + totalUserScore + "/" + totalWordsTested +  ".0 or " + Math.round(totalUserScore/totalWordsTested*100) + "%. Feel free to test your knowledge again!");
+            }
+
+            // Ask to check another score
+            sayText("Would you like to check another score?");
+            PhraseSet continueScore = PhraseText(continueConstant);
+            PhraseSet exitScore = PhraseText(exitTextConstant);
+
+            PhraseSet matchedLeaveScoreOption = ListenText(continueScore, exitScore);
+
+
+            // Listen for vocabulary test user would like, set matching vocabulary set
+            if (PhraseSetUtil.equals(matchedLeaveScoreOption,continueScore))
+            {
+                sayText("Okay!");
+            }
+            else if (PhraseSetUtil.equals(matchedLeaveScoreOption,exitScore))
+            {
+                sayText("Taking you back to the main menu.");
+                returnToMainMenu = true;
+            }
+        }
     }
 
     /*
@@ -583,6 +732,20 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         {
             Log.i(TAG, "Sleep Thread Failed.");
         }
+    }
+
+    // https://stackoverflow.com/questions/6443176/how-can-i-generate-a-random-number-within-a-range-but-exclude-some
+    // Get a random number in a given range, but exclude a few numbers from getting picked
+    private static int getRandomNumberWithExclusion(int start, int end, ArrayList<Integer> exclude) {
+        Random rnd = new Random();
+        int random = start + rnd.nextInt(end - start + 1 - exclude.size());
+        for (int ex : exclude) {
+            if (random < ex) {
+                break;
+            }
+            random++;
+        }
+        return random;
     }
 
     // Doesn't work in emulator - might need Physical Pepper

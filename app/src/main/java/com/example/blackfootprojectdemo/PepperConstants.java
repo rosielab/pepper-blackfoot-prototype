@@ -8,7 +8,7 @@ public interface PepperConstants
 {
     // **Introductory Constants**
     String[] feelingWellConstant = new String[]{"good", "nice", "well", "fine", "okay", "better", "so so", "great", "yes", "hello", "hi"};
-    String[] feelingBadConstant = new String[]{"not", "bad", "not good", "cry", "sad", "no", "worry"};
+    String[] feelingBadConstant = new String[]{"not", "bad", "not good", "cry", "sad", "no", "worry", "terrible"};
 
     // **PhraseText Constants**
     String[] playTextConstant = new String[]{"play", "game", "first"};
