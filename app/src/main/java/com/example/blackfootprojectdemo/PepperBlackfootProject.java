@@ -3,7 +3,8 @@ package com.example.blackfootprojectdemo;
 import android.content.res.Resources;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
-import 	android.media.SubtitleData;
+import android.media.SubtitleData;
+import android.media.MediaPlayer.OnSubtitleDataListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -215,6 +216,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
             boolean endCurrentStory = false;
             int audioPosition = 0;
+            //MediaPlayer.OnSubtitleDataListener listener;
+            //onSubtitleData(mediaPlayer, welcomeStorySubtitles);
             playMedia(chosenStory);
             while (!endCurrentStory)
             {
