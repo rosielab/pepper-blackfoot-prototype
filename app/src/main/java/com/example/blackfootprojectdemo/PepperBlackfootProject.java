@@ -3,6 +3,8 @@ package com.example.blackfootprojectdemo;
 import android.content.res.Resources;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
+import android.media.SubtitleData;
+import android.media.MediaPlayer.OnSubtitleDataListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -71,6 +73,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Hide speech bar from primary view (only shown when Pepper's talked to).
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.IMMERSIVE);
         setSpeechBarDisplayPosition(SpeechBarDisplayPosition.TOP);
+
 
         // Register the RobotLifecycleCallbacks to this Activity.
         QiSDK.register(this, this);
@@ -213,8 +216,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
             boolean endCurrentStory = false;
             int audioPosition = 0;
+            //MediaPlayer.OnSubtitleDataListener listener;
+            //onSubtitleData(mediaPlayer, welcomeStorySubtitles);
             playMedia(chosenStory);
-            while (!endCurrentStory) {
+            while (!endCurrentStory)
+            {
 
                 mediaPlayer.seekTo(audioPosition);
                 mediaPlayer.start();
@@ -255,28 +261,56 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
                 // pause story, option to continue (re-loops) or exit/end story
                 // Note: if/else statements currently don't work, have to wait until story starts again to choose these options.
                 // pauses story for a few seconds, then picks up at same spot.
-                else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory)) {
+                else if (PhraseSetUtil.equals(matchedStoryOption, pauseStory))
+                {
                     mediaPlayer.pause();
                     audioPosition = mediaPlayer.getCurrentPosition();
+                    boolean unPauseStory = false;
                     sayText("I've paused the story for you. Would you like to continue, stop or reset?");
-                    if (PhraseSetUtil.equals(matchedStoryOption, endStory)) {
-                        mediaPlayer.stop();
-                        sayText("Returning to main menu.");
-                        return;
-                    } else if (PhraseSetUtil.equals(matchedStoryOption, continueStory)) {
-                        mediaPlayer.seekTo(audioPosition);
-                        mediaPlayer.start();
-                    } else if (PhraseSetUtil.equals(matchedStoryOption, restartStory)) {
-                        mediaPlayer.pause();
-                        sayText("Okay, starting from the top!");
-                        audioPosition = 0;
-                        mediaPlayer.seekTo(audioPosition);
-                        mediaPlayer.start();
-                    }
+                    PhraseSet matchedPauseOption = ListenText(endStory, continueStory, restartStory);
+                    while(!unPauseStory)
+                    {
+                        if (PhraseSetUtil.equals(matchedPauseOption, endStory)) {
+                            /*unPauseStory = true;
+                            mediaPlayer.stop();
+                            sayText("Returning to main menu.");
+                            return;*/
+                            // stop story
+                            unPauseStory=true;
+                            mediaPlayer.stop();
+                            endCurrentStory = true;
+                            sayText("Would you like to hear another story?");
+                            PhraseSet matchedYesNoOption = ListenText(yesText, noText);
+                            if (PhraseSetUtil.equals(matchedYesNoOption, yesText))
+                            {
+                                sayText("You got it!");
+                            }
+                            else if (PhraseSetUtil.equals(matchedYesNoOption, noText))
+                            {
+                                sayText("Not a problem, returning to main menu.");
+                                chooseStory = true; // stop story selection
+                                return;
+                            }
+                        } else if (PhraseSetUtil.equals(matchedPauseOption, continueStory)) {
+                            unPauseStory = true;
+                            sayText("Alright, let the story proceed.");
+                            playMedia(chosenStory);
+                            mediaPlayer.seekTo(audioPosition);
+                            mediaPlayer.start();
+                        } else if (PhraseSetUtil.equals(matchedPauseOption, restartStory)) {
+                            unPauseStory = true;
+                            //mediaPlayer.pause();
+                            sayText("Okay, starting from the top!");
+                            audioPosition = 0;
+                            mediaPlayer.seekTo(audioPosition);
+                            mediaPlayer.start();
+                        }
+                    } // end of while loop
+
                 }
 
-            } //end of story
-        }
+            } //end of current story
+        } // end of all stories, return to main menu
     } // end StoryMenu()
 
     // Pepper's Learn Function to teach words

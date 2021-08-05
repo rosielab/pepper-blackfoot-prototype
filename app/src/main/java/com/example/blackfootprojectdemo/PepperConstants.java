@@ -26,6 +26,7 @@ public interface PepperConstants
     String[] endStoryConstant = new String[]{"stop", "done", "finish", "end"};
     String[] continueStoryConstant = new String[]{"yes", "sure", "yep", "go", "okay", "continue", "story", "proceed"};
     String[] restartStoryConstant = new String[]{"restart", "reset", "beginning", "front"};
+    String[] welcomeStorySubtitles = new String[]{"Hello my friends.", "My name is Yellowhorn.", "I am very glad that you are able to visit here.", "Come on in.", "Stay for a while.", "Read the articles we have here.", "Come again."};
 
     // **Learn Menu Constants**
     String[] learnGreetingConstant = new String[]{"greeting", "first", "greetings"};
@@ -72,7 +73,73 @@ public interface PepperConstants
         put("coffee", "iitapsiksikimmii");
         put("salt", "isttsiksipoko");
         put("sugar", "naapiiniiwan");
+        //put("meat", "i'ksisako");
 
     }};
-    String[] foodWordsList = new String[]{"egg", "fish", "bread", "water", "apples", "oranges", "burger", "fries", "desert", "tea", "coffee", "salt", "sugar"};
+    String[] foodWordsList = new String[]{"egg", "fish", "bread", "water", "apples", "oranges", "burger", "fries", "desert", "tea", "coffee", "salt", "sugar"}; //need to add "meat"
+
+    // **HashMap of People Words**
+    Map<String, String> peopleWords = new HashMap<String, String>()
+    {{
+
+        put("woman", "aakii");
+        put("man", "ninaa");
+        put("girl", "aakiikoan");
+        put("boy", "saahkomaapi");
+        put("mother", "iksisst");
+        put("father", "inn");
+        put("child", "pookaa");
+
+    }};
+    String[] peopleWordsList = new String[]{"woman", "man", "girl", "boy", "mother", "father", "child"};
+
+    // **HashMap of House Words**
+    Map<String, String> houseWords = new HashMap<String, String>()
+    {{
+
+        put("bathroom", "makapoiyiss");
+        put("kitchen", "itoiyo'soap");
+        put("car", "aiksistomatomahka");
+        put("door", "kitsim");
+        put("window", "ksisstsikomstan");
+        put("elevator", "aisspaohpii");
+        put("dog", "imitaa");
+
+    }};
+    String[] houseWordsList = new String[]{"bathroom", "kitchen", "car", "door", "window", "elevator", "dog"};
+
+    // **HashMap of Location Words**
+    Map<String, String> locationWords = new HashMap<String, String>()
+    {{
+
+        put("cafe", "itoiyo'pii");
+        put("house", "naapoiyiss");
+        put("store", "itaohpomoapii");
+        put("cinema", "aisaksittoo");
+        put("tipi", "niitoiyiss");
+        put("night club", "itaisimmioapii");
+        put("movie", "aisaiksisttoo");
+
+    }};
+    String[] locationWordsList = new String[]{"cafe", "house", "store", "cinema", "tipi", "night club", "movie"};
+
+    // **HashMap of Sentence Words**
+    Map<String, String> sentenceWords = new HashMap<String, String>()
+    {{
+
+        put("today", "annohk");
+        put("this morning", "ksisskanaotonni");
+        put("tomorrow", "aapinakos");
+        put("i will go", "nitaakitapoo");
+        put("i will eat", "nitaaksoyi");
+        put("i went", "nichitapoo");
+        put("please pass the", "kippohkokkit");
+        put("and", "ki");
+        put("evening", "otako");
+        put("where", "tsima");
+        put("who", "tahkaa");
+        put("yesterday", "matonni");
+
+    }};
+    String[] sentenceWordsList = new String[]{"today", "this morning", "tomorrow", "i will go", "i will eat", "i went", "please pass the", "and", "evening", "where", "who", "yesterday"};
 }
