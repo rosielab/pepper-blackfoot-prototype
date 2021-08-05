@@ -17,7 +17,7 @@ public interface PepperConstants
     String[] testTextConstant = new String[]{"test", "exam", "third", "last", "final"};
     String[] scoreTextConstant = new String[]{"score", "grade", "number"};
     String[] exitTextConstant = new String[]{"no", "nope", "exit", "stop", "done", "break", "not anymore", "no more"};
-    String[] anyTextConstant = new String[]{"anything", "you", "something", "matter", "any", "eh", "not sure", "don't know", "uh"};
+    String[] anyTextConstant = new String[]{"anything", "you", "something", "matter", "any", "eh", "not sure", "don't know", "uh", "choose", "pick"};
 
     // **Story Menu Constants**
     String[] welcomeStoryConstant = new String[]{"welcome", "message", "first", "one"};
@@ -55,7 +55,6 @@ public interface PepperConstants
         put("i'm doing good. you?","tsikohssokopii. kistoo?");
     }};
     String[] greetingWordsList = new String[]{"hello", "how are you", "not too bad", "let's go", "yes", "no", "hello friend", "i'm doing good. you?"};
-
 
     // **HashMap of Food Words**
     Map<String, String> foodWords = new HashMap<String, String>()

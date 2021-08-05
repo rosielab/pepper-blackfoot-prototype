@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "995430978591",
+    "project_id": "blackfoot-pepper-project",
+    "storage_bucket": "blackfoot-pepper-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995430978591:android:150a3402645caa8605712a",
+        "android_client_info": {
+          "package_name": "com.example.blackfootprojectdemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "995430978591-kjfkige4gm5ci4v06cftqkt55540q7k1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDNy1E3xommvUOOlrWUfTOOWCQIy-1OEpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "995430978591-kjfkige4gm5ci4v06cftqkt55540q7k1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
