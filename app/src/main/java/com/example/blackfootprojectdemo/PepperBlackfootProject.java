@@ -1,15 +1,17 @@
 package com.example.blackfootprojectdemo;
 
 import android.content.res.Resources;
-import android.media.AudioFormat;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.RawRes;
+import androidx.annotation.RequiresApi;
 
 import com.aldebaran.qi.sdk.QiContext;
 import com.aldebaran.qi.sdk.QiSDK;
@@ -38,9 +40,11 @@ import java.util.ArrayList;
 //import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.lang.Math;
 
@@ -59,9 +63,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
     private int totalGreetingWordsTested = 0;
     private int testingWordsSize = 0;
     private int correctTestingButton;
+    private boolean correctHangmanAnswer = false;
     private boolean correctAnswerChosen = false;
     private boolean incorrectAnswerChosen = false;
     private ArrayList<Integer> incorrectTestingButtons = new ArrayList<Integer>();
+    private String PhraseHeardByPepper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -136,7 +142,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         PhraseSet matchedMenuOption = ListenText(playText, storyText, learnText, testText, scoreText, anyText, exitTablet);
 
         if (PhraseSetUtil.equals(matchedMenuOption, playText)) {
-            sayText("Let's play!");
+            sayText("Let's play hangman!");
+            hangman();
         } else if (PhraseSetUtil.equals(matchedMenuOption, storyText)) {
             sayText("Let's hear a story!");
             storyMenu();
@@ -157,6 +164,288 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             continue_looping = false;
             onRobotFocusGained(pepper_context);
         }
+    }
+
+    private void hangman() {
+        runAnimation(R.raw.nicereaction_a002);
+
+        // Ask the user which category they would like to see the word from
+        PhraseSet greetingCategory = PhraseText(learnGreetingConstant);
+        PhraseSet foodCategory = PhraseText(learnFoodConstant);
+        PhraseSet anyText = PhraseText(anyTextConstant);
+
+        sayText("Would you like to play Hangman with greeting or food words? I can also choose for you.");
+        PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
+
+        Map<String, String> currentHashSet = null;
+        String[] wordList = null;
+
+        if (PhraseSetUtil.equals(matchedMenuOption, greetingCategory))
+        {
+            currentHashSet = greetingWords;
+            wordList = greetingWordsList;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption, foodCategory))
+        {
+            currentHashSet = foodWords;
+            wordList = foodWordsList;
+        }
+        else if (PhraseSetUtil.equals(matchedMenuOption, anyText))
+        {
+            sayText("Sure! I'm happy to choose.");
+
+            // Get a random integer and choose the appropriate category.
+            int randomNum = ThreadLocalRandom.current().nextInt(1, 3);
+            switch (randomNum) {
+                case 1:
+                    currentHashSet = greetingWords;
+                    wordList = greetingWordsList;
+                    break;
+                case 2:
+                    currentHashSet = foodWords;
+                    wordList = foodWordsList;
+                    break;
+            }
+        }
+
+        shuffleVocabulary(wordList);
+        assert wordList != null;
+        for (String word : wordList)
+        {
+            correctHangmanAnswer = false;
+            String englishWord = word;
+            String wordWithoutSpaces = englishWord.replaceAll("[\\s .?']","");
+
+            String hangmanWordAudioFile = "learn_" + wordWithoutSpaces;
+            String blackfootWord = currentHashSet.get(word);
+
+            Log.i(TAG, "Current Hangman Word: " + blackfootWord); // Log for debugging purposes
+            int wordLength = blackfootWord.length();
+            int letterCount = 0;
+            for (int i = 0; i < blackfootWord.length(); i++)
+            {
+                if (Character.isLetter(blackfootWord.charAt(i)) || blackfootWord.charAt(i) == 'í');
+                {
+                    letterCount++;
+                }
+            }
+            int numberOfIncorrectGuesses = 6;
+
+            Set<Character> stringCharacterSet = new HashSet<Character>();
+            ArrayList<Character> specialCharacters = new ArrayList<Character>() {
+                {
+                    add(' ');
+                    add('.');
+                    add('?');
+                    add('\'');
+                    add('í');
+                }};
+
+            for (int i = 0; i < wordLength; i++)
+            {
+                boolean foundChar = false;
+                for (Character symbol : specialCharacters)
+                {
+                    if (blackfootWord.charAt(i) == symbol)
+                    {
+                        foundChar = true;
+                    }
+                }
+                if (foundChar == false)
+                {
+                    stringCharacterSet.add(blackfootWord.toCharArray()[i]);
+                }
+            }
+
+            Log.i(TAG, stringCharacterSet.toString());
+
+            runOnUiThread(() ->
+            {
+                // View the hangman tablet image and make the sub-images invisible
+                updateTabletImage("hangman");
+                TextView displayText = findViewById(R.id.hangmanText);
+
+                ImageView flowerHappy = (ImageView)findViewById(R.id.flowerhappy);
+                ImageView flowerOk = (ImageView)findViewById(R.id.flowerok);
+                ImageView flowerSad = (ImageView)findViewById(R.id.flowersad);
+                ImageView flowerRip = (ImageView)findViewById(R.id.flowerrip);
+
+                flowerHappy.setVisibility(View.VISIBLE);
+                flowerOk.setVisibility(View.INVISIBLE);
+                flowerSad.setVisibility(View.INVISIBLE);
+                flowerRip.setVisibility(View.INVISIBLE);
+
+                // Update the text to display _ based on word length.
+                String underscoreLength = String.format("%0" + wordLength + "d", 0).replace("0", "_");
+
+                for (int i = 0; i < wordLength; i++)
+                {
+                    for (Character symbol : specialCharacters)
+                    {
+                        if (blackfootWord.charAt(i) == symbol)
+                        {
+                            StringBuilder originalUnderscoreArray = new StringBuilder(underscoreLength);
+                            originalUnderscoreArray.setCharAt(i, symbol);
+                            underscoreLength = String.valueOf(originalUnderscoreArray);
+                            break;
+                        }
+                    }
+                    displayText.setText(underscoreLength);
+                }
+            });
+
+            String chosenCategory;
+            if (currentHashSet == greetingWords)
+            {
+                chosenCategory = "greeting";
+            }
+            else
+            {
+                chosenCategory = "food";
+            }
+            sayText("I am a " + chosenCategory + " word, and I have " + letterCount + " letters. Can you guess my letters in 6 tries? ");
+
+            // Create an array of letters that Pepper should listen for.
+            String[] lettersList = new String[26];
+            int indexCount = 0;
+            for (char letter = 'a'; letter <= 'z'; letter++)
+            {
+                lettersList[indexCount++] = Character.toString(letter);
+            }
+
+            boolean continuePlaying = true;
+            while (continuePlaying && numberOfIncorrectGuesses > 0 && correctHangmanAnswer == false)
+            {
+                if (numberOfIncorrectGuesses == 3 || numberOfIncorrectGuesses == 4)
+                {
+                    runOnUiThread(() ->
+                    {
+                        ImageView flowerHappy = (ImageView)findViewById(R.id.flowerhappy);
+                        ImageView flowerOk = (ImageView)findViewById(R.id.flowerok);
+                        flowerHappy.setVisibility(View.INVISIBLE);
+                        flowerOk.setVisibility(View.VISIBLE);
+                    });
+                }
+                else if (numberOfIncorrectGuesses > 0 && numberOfIncorrectGuesses < 3)
+                {
+                    runOnUiThread(() ->
+                    {
+                        ImageView flowerOk = (ImageView)findViewById(R.id.flowerok);
+                        ImageView flowerSad = (ImageView)findViewById(R.id.flowersad);
+                        flowerOk.setVisibility(View.INVISIBLE);
+                        flowerSad.setVisibility(View.VISIBLE);
+                    });
+                }
+
+                PhraseSet possibleLetters = PhraseText(lettersList);
+                PhraseSet exitPlaying = PhraseText(exitTextConstant);
+
+                PhraseSet matchedLetterOption = ListenText(possibleLetters, exitPlaying);
+
+                if (PhraseSetUtil.equals(matchedLetterOption, possibleLetters))
+                {
+                    String letterSpoken = PhraseHeardByPepper;
+
+                    if (blackfootWord.contains(letterSpoken))
+                    {
+                        stringCharacterSet.remove(letterSpoken.charAt(0));
+                        int letterFrequencyCount = wordLength - blackfootWord.replaceAll(letterSpoken,"").length();
+                        sayText(randomString(correctFeedbackConstant) + "! I have " + letterFrequencyCount + " " + letterSpoken + "'s."); // ADD ANIMATIONS EVERYWHERE HERE!!!!
+                        runOnUiThread(() ->
+                        {
+                            TextView displayText = findViewById(R.id.hangmanText);
+                            char[] currentHangmanDisplayWord = displayText.getText().toString().toCharArray();
+                            for (int i = 0; i < wordLength; i++)
+                            {
+                                if (blackfootWord.charAt(i) == letterSpoken.charAt(0))
+                                {
+                                    currentHangmanDisplayWord[i] = letterSpoken.charAt(0);
+                                }
+                            }
+                            String newHangmanDisplayWord = String.valueOf(currentHangmanDisplayWord);
+                            displayText.setText(newHangmanDisplayWord);
+                        });
+                    }
+                    else
+                    {
+                        sayText(randomString(incorrectFeedbackConstant) + "! I do not contain any " + letterSpoken + "'s.");
+                        numberOfIncorrectGuesses--;
+                        runOnUiThread(() ->
+                        {
+                            TextView incorrectLettersList = findViewById(R.id.incorrectLettersList);
+                            incorrectLettersList.append(" " + letterSpoken);
+                        });
+                    }
+                }
+                else if (PhraseSetUtil.equals(matchedLetterOption, exitPlaying))
+                {
+                    continuePlaying = false;
+                }
+
+                Log.i(TAG, stringCharacterSet.toString());
+                if (stringCharacterSet.isEmpty())
+                {
+                    correctHangmanAnswer = true;
+                    break;
+                }
+            }
+
+            runOnUiThread(() ->
+            {
+                TextView correctHangmanText = findViewById(R.id.hangmanText);
+                correctHangmanText.setText(blackfootWord);
+            });
+
+            if (numberOfIncorrectGuesses == 0 || !continuePlaying)
+            {
+                runOnUiThread(() ->
+                {
+                    ImageView flowerHappy = (ImageView) findViewById(R.id.flowerhappy);
+                    ImageView flowerOk = (ImageView) findViewById(R.id.flowerok);
+                    ImageView flowerSad = (ImageView) findViewById(R.id.flowersad);
+                    ImageView flowerRip = (ImageView) findViewById(R.id.flowerrip);
+
+                    flowerHappy.setVisibility(View.INVISIBLE);
+                    flowerOk.setVisibility(View.INVISIBLE);
+                    flowerSad.setVisibility(View.INVISIBLE);
+                    flowerRip.setVisibility(View.VISIBLE);
+                });
+            }
+            if (!continuePlaying)
+            {
+                sayText("No worries, the word I chose was " + blackfootWord + ".");
+                playMedia(hangmanWordAudioFile);
+                sayText("It means " + englishWord + " in English!");
+                sayText("Let's play again next time.");
+                break;
+            }
+            if (correctHangmanAnswer || numberOfIncorrectGuesses == 0)
+            {
+                if (correctHangmanAnswer)
+                {
+                    sayText("Wow, that's right! The word I chose was " + blackfootWord + ".");
+                }
+                else
+                {
+                    sayText(randomString(incorrectFeedbackConstant) + "! The word I chose was " + blackfootWord + ".");
+                }
+                playMedia(hangmanWordAudioFile);
+                sayText("It means " + englishWord + " in English!");
+                sayText("Would you like to play another round?"); // FINISH
+
+                PhraseSet continueWithWords = PhraseText(continueConstant);
+                PhraseSet exitLearning = PhraseText(exitTextConstant);
+                PhraseSet continueLearning = ListenText(continueWithWords, exitLearning);
+
+                if (PhraseSetUtil.equals(continueLearning,exitLearning))
+                {
+                    sayText("Awesome, let's continue!");
+                    break;
+                }
+            }
+
+        }
+
     }
 
     //Pepper's Story Function to hear stories in Blackfoot
@@ -323,7 +612,6 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         // Iterate through each word until the user wants to stop
         for (String word : currentHashSet.keySet())
         {
-
             // Translation of English word
             String blackfootWord = currentHashSet.get(word);
 
@@ -462,9 +750,11 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         for (String listWord: wordList)
         {
             totalWordsTested++;
-            String englishWord = null;
-            String blackfootWord = null;
+            String englishWord = listWord;
+            String blackfootWord = currentHashSet.get(englishWord);
 
+            // Unnecessary?
+            /*
             // Match randomized question to HashMap, set english/blackfoot answers
             for (String word: currentHashSet.keySet())
             {
@@ -475,6 +765,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
 
                 }
             }
+            */
 
             // Reset number of tries
             double numberTries = 0;
@@ -884,7 +1175,8 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         ListenResult listenResult = listen.run();
 
         // Log what Pepper has heard in console
-        Log.i(TAG, "Heard phrase: " + listenResult.getHeardPhrase().getText());
+        PhraseHeardByPepper = listenResult.getHeardPhrase().getText();
+        Log.i(TAG, "Heard phrase: " + PhraseHeardByPepper);
 
         // Return the phrase Pepper recognized
         return listenResult.getMatchedPhraseSet();
