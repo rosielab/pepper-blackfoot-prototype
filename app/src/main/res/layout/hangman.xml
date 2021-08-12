@@ -114,7 +114,9 @@
         android:layout_marginBottom="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/flowersad"
+        app:layout_constraintHorizontal_bias="0.673"
         app:layout_constraintStart_toEndOf="@+id/flowerok"
         app:layout_constraintTop_toBottomOf="@+id/incorrectLettersList"
+        app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/flowerrip" />
 </androidx.constraintlayout.widget.ConstraintLayout>

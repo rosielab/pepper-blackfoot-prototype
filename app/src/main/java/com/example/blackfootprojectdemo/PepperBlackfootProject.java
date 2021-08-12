@@ -145,7 +145,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         PhraseSet matchedMenuOption = ListenText(playText, storyText, learnText, testText, scoreText, anyText, exitTablet);
 
         if (PhraseSetUtil.equals(matchedMenuOption, playText)) {
-            sayText("Let's play hangman!");
+            sayText("Let's play Letters of Fortune!");
             hangman();
         } else if (PhraseSetUtil.equals(matchedMenuOption, storyText)) {
             sayText("Let's hear a story!");
@@ -177,7 +177,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
         PhraseSet foodCategory = PhraseText(learnFoodConstant);
         PhraseSet anyText = PhraseText(anyTextConstant);
 
-        sayText("Would you like to play Hangman with greeting or food words? I can also choose for you.");
+        sayText("Would you like to play Letters of Fortune with greeting or food words? I can also choose for you.");
         PhraseSet matchedMenuOption = ListenText(greetingCategory, foodCategory, anyText);
 
         Map<String, String> currentHashSet = null;
@@ -222,7 +222,7 @@ public class PepperBlackfootProject extends RobotActivity implements RobotLifecy
             String hangmanWordAudioFile = "learn_" + wordWithoutSpaces;
             String blackfootWord = currentHashSet.get(word);
 
-            Log.i(TAG, "Current Hangman Word: " + blackfootWord); // Log for debugging purposes
+            Log.i(TAG, "Current Word: " + blackfootWord); // Log for debugging purposes
             int wordLength = blackfootWord.length();
             int letterCount = 0;
             for (int i = 0; i < blackfootWord.length(); i++)
